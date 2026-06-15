@@ -1,0 +1,746 @@
+[{
+    "word": "no longer",
+    "translations": ["ya no"],
+    "description": "Se usa cuando una acción ha terminado. (ya no funciona)",
+    "past": null
+}, {
+    "word": "should",
+    "translations": ["deberia"],
+    "description": "Indica recomendación, consejo o deber suave.",
+    "past": null
+}, {
+    "word": "despite being",
+    "translations": ["a pesar de estar"],
+    "description": "Expresa contraste o concesión frente a un estado.",
+    "past": null
+}, {
+    "word": "was/were",
+    "translations": ["fue", "estaba"],
+    "description": "Pasado de 'to be'. Was es singular y were es plural.",
+    "past": null
+}, {
+    "word": "get to",
+    "translations": ["ponerse a", "llegar a"],
+    "description": "Expresa la transición de un estado inactivo a una acción.",
+    "past": null
+}, {
+    "word": "stand",
+    "translations": ["de pie"],
+    "description": "Estar erguido o mantenerse sobre los pies.",
+    "past": "stood"
+}, {
+    "word": "brandish",
+    "translations": ["blandir"],
+    "description": "Mover un arma u otro objeto de forma amenazante o de exhibición.",
+    "past": "brandished"
+}, {
+    "word": "swing",
+    "translations": ["balancear"],
+    "description": "Mover de un lado a otro. (balanceo la espada)",
+    "past": "swung"
+}, {
+    "word": "sparkle",
+    "translations": ["brillar"],
+    "description": "Emitir destellos pequeños y rápidos de luz.",
+    "past": "sparkled"
+}, {
+    "word": "wine",
+    "translations": ["vino"],
+    "description": "Bebida alcohólica obtenida de la uva.",
+    "past": null
+}, {
+    "word": "stroke",
+    "translations": ["ataque", "golpe"],
+    "description": "Golpe repentino, impacto físico o evento médico cerebral.",
+    "past": null
+}, {
+    "word": "will",
+    "translations": ["querer"],
+    "description": "Como verbo auxiliar indica futuro o certeza. También significa voluntad.",
+    "past": "would"
+}, {
+    "word": "bite",
+    "translations": ["morder"],
+    "description": "Hincar los dientes en algo.",
+    "past": "bit"
+}, {
+    "word": "shove",
+    "translations": ["empujar"],
+    "description": "Empujar a alguien o algo con fuerza o de forma brusca.",
+    "past": "shoved"
+}, {
+    "word": "away",
+    "translations": ["lejos"],
+    "description": "A una distancia o dirección distinta de un lugar.",
+    "past": null
+}, {
+    "word": "still",
+    "translations": ["aun"],
+    "description": "Indica continuidad de una situación.",
+    "past": null
+}, {
+    "word": "scrunch",
+    "translations": ["arrugar", "aplastar"],
+    "description": "Deformar una superficie apretándola con fuerza.",
+    "past": null
+}, {
+    "word": "stance",
+    "translations": ["postura"],
+    "description": "Posición física del cuerpo o actitud ante algo.",
+    "past": null
+}, {
+    "word": "sight",
+    "translations": ["vista", "visión"],
+    "description": "Facultad de ver o el panorama que se percibe.",
+    "past": null
+}, {
+    "word": "despair",
+    "translations": ["desesperacion"],
+    "description": "Pérdida total de la esperanza.",
+    "past": null
+}, {
+    "word": "thin",
+    "translations": ["delgado"],
+    "description": "De poco grosor o poca grasa corporal.",
+    "past": null
+}, {
+    "word": "seem",
+    "translations": ["parecer"],
+    "description": "Dar la impresión de ser o estar de una manera.",
+    "past": "seemed"
+}, {
+    "word": "go",
+    "translations": ["ir"],
+    "description": "Indica desplazamiento o acción.",
+    "past": "went"
+}, {
+    "word": "rise",
+    "translations": ["elevar", "subir"],
+    "description": "Desplazarse hacia arriba o incrementarse.",
+    "past": "rose"
+}, {
+    "word": "easy",
+    "translations": ["tranquilo"],
+    "description": "Que no presenta dificultad o se realiza sin esfuerzo.",
+    "past": null
+}, {
+    "word": "may",
+    "translations": ["poder"],
+    "description": "Expresa posibilidad, permiso o probabilidad formal.",
+    "past": "might"
+}, {
+    "word": "could",
+    "translations": ["podria"],
+    "description": "Pasado de 'can'. Expresa habilidad o posibilidad condicional.",
+    "past": null
+}, {
+    "word": "say",
+    "translations": ["decir"],
+    "description": "Decir algo.",
+    "past": "said"
+}, {
+    "word": "glid",
+    "translations": ["deslizar"],
+    "description": "Moverse suave y continuamente sobre una superficie.",
+    "past": "glided"
+}, {
+    "word": "dry",
+    "translations": ["secar"],
+    "description": "Quitar la humedad de un cuerpo o superficie.",
+    "past": "dried"
+}, {
+    "word": "shriek",
+    "translations": ["chillido"],
+    "description": "Grito agudo y estridente.",
+    "past": "shrieked"
+}, {
+    "word": "being",
+    "translations": ["ser", "existencia"],
+    "description": "Condición de existir o entidad viva. (el ser supremo)",
+    "past": null
+}, {
+    "word": "against",
+    "translations": ["contra", "en contra de"],
+    "description": "En oposición o de cara a un objeto o idea.",
+    "past": null
+}, {
+    "word": "gaze",
+    "translations": ["mirada"],
+    "description": "Acción de observar fijamente.",
+    "past": "gazed"
+}, {
+    "word": "train",
+    "translations": ["enfocar", "entrenar", "tren"],
+    "description": "Como verbo: dirigir la atención o prepararse físicamente.",
+    "past": "trained"
+}, {
+    "word": "staff",
+    "translations": ["bastón", "personal"],
+    "description": "Vara larga de apoyo o conjunto de trabajadores.",
+    "past": null
+}, {
+    "word": "gorgeous",
+    "translations": ["maravilloso"],
+    "description": "De una belleza o calidad sobresaliente.",
+    "past": null
+}, {
+    "word": "born",
+    "translations": ["nació", "de nacimiento"],
+    "description": "Haber salido del vientre materno u origen de algo.",
+    "past": null
+}, {
+    "word": "along",
+    "translations": ["al lado de", "a lo largo de"],
+    "description": "En dirección paralela o junto a una superficie.",
+    "past": null
+}, {
+    "word": "don",
+    "translations": ["ponerse", "vestirse"],
+    "description": "ponerse una prenda de vestir.",
+    "past": "donned"
+}, {
+    "word": "tobe",
+    "translations": ["túnica", "manto"],
+    "description": "Prenda de vestir holgada y larga.",
+    "past": null
+}, {
+    "word": "as though",
+    "translations": ["como si"],
+    "description": "Introduce una comparación con una situación hipotética.",
+    "past": null
+}, {
+    "word": "though",
+    "translations": ["sin embargo"],
+    "description": "Introduce un contraste o limitación.",
+    "past": null
+}, {
+    "word": "forget",
+    "translations": ["olvidar"],
+    "description": "Dejar de retener algo en la memoria.",
+    "past": "forgot"
+}, {
+    "word": "breathe",
+    "translations": ["respirar"],
+    "description": "Inhalar y exhalar aire.",
+    "past": "breathed"
+}, {
+    "word": "gulp",
+    "translations": ["tragar", "jadear"],
+    "description": "Pasar un líquido o alimento de una vez o tomar aire bruscamente.",
+    "past": "gulped"
+}, {
+    "word": "lure",
+    "translations": ["señuelo", "atraer"],
+    "description": "Cosa que sirve para atraer o persuadir.",
+    "past": "lured"
+}, {
+    "word": "beyond",
+    "translations": ["mas alla de"],
+    "description": "En un lugar más avanzado o fuera de los límites.",
+    "past": null
+}, {
+    "word": "as well",
+    "translations": ["tambien"],
+    "description": "Equivale a 'also' o 'too'. Se sitúa normalmente al final.",
+    "past": null
+}, {
+    "word": "scream",
+    "translations": ["gritar"],
+    "description": "Sonido vocal fuerte y agudo emitido con fuerza.",
+    "past": "screamed"
+}, {
+    "word": "before",
+    "translations": ["delante", "antes"],
+    "description": "En una posición anterior en el tiempo o espacio.",
+    "past": null
+}, {
+    "word": "been",
+    "translations": ["ser", "estar"],
+    "description": "Normalmente se usa en la forma 'have been' (haber estado).",
+    "past": null
+}, {
+    "word": "whether",
+    "translations": ["si"],
+    "description": "Introduce una opción o conjunción condicional de duda.",
+    "past": null
+}, {
+    "word": "remember",
+    "translations": ["recordar"],
+    "description": "Traer a la memoria información adquirida.",
+    "past": "remembered"
+}, {
+    "word": "also",
+    "translations": ["también", "tambien"],
+    "description": "Indica adición o semejanza en una frase.",
+    "past": null
+}, {
+    "word": "make",
+    "translations": ["hacer", "crear"],
+    "description": "Producir o fabricar algo material o inmaterial.",
+    "past": "made"
+}, {
+    "word": "give",
+    "translations": ["dar"],
+    "description": "Traspasar la posesión o el control de algo a otra persona.",
+    "past": "gave"
+}, {
+    "word": "have",
+    "translations": ["tener", "haber"],
+    "description": "Poseer algo o haber realizado una acción.",
+    "past": "had"
+}, {
+    "word": "even",
+    "translations": ["siquiera", "incluso"],
+    "description": "Indica énfasis o inclusión de un elemento extremo.",
+    "past": null
+}, {
+    "word": "which",
+    "translations": ["que", "cual"],
+    "description": "Se usa cuando las opciones son limitadas. (similar a what)",
+    "past": null
+}, {
+    "word": "pick",
+    "translations": ["elegir", "recoger"],
+    "description": "Seleccionar algo entre varias opciones o tomarlo de un lugar.",
+    "past": "picked"
+}, {
+    "word": "stretch",
+    "translations": ["estirar"],
+    "description": "Extender o dilatar una cosa o el propio cuerpo.",
+    "past": "stretched"
+}, {
+    "word": "snatch",
+    "translations": ["arrebatar"],
+    "description": "Tomar algo de forma rápida, brusca o inesperada.",
+    "past": "snatched"
+}, {
+    "word": "but",
+    "translations": ["pero", "sino que"],
+    "description": "Conjunción adversativa que introduce un contraste o limitación.",
+    "past": null
+}, {
+    "word": "look away",
+    "translations": ["apartar la mirada"],
+    "description": "Desviar los ojos de un objeto o persona.",
+    "past": "looked away"
+}, {
+    "word": "steal",
+    "translations": ["robar"],
+    "description": "Tomar algo ajeno sin el consentimiento de su dueño.",
+    "past": "stole"
+}, {
+    "word": "grasp",
+    "translations": ["agarrar", "comprender"],
+    "description": "Comprender una idea o sujetar algo de manera firme.",
+    "past": "grasped"
+}, {
+    "word": "grab",
+    "translations": ["agarrar"],
+    "description": "Tomar algo de forma repentina, brusca o con fuerza.",
+    "past": "grabbed"
+}, {
+    "word": "clench",
+    "translations": ["apretar"],
+    "description": "Cerrar o apretar con fuerza partes del cuerpo como manos o dientes.",
+    "past": "clenched"
+}, {
+    "word": "clang",
+    "translations": ["sonar"],
+    "description": "Producir un sonido metálico fuerte y resonante.",
+    "past": "clanged"
+}, {
+    "word": "bit",
+    "translations": ["un poco", "una parte"],
+    "description": "Porción o cantidad pequeña de algo.",
+    "past": null
+}, {
+    "word": "off",
+    "translations": ["apagado", "de"],
+    "description": "Indica estado apagado, separación o distancia.",
+    "past": null
+}, {
+    "word": "dwell",
+    "translations": ["habitar", "morar"],
+    "description": "Residir o vivir en un lugar determinado.",
+    "past": "dwelt"
+}, {
+    "word": "lying",
+    "translations": ["mintiendo", "acostado"],
+    "description": "expresa la acción de estar echado o de no decir la verdad.",
+    "past": null
+}, {
+    "word": "hear",
+    "translations": ["escuchar"],
+    "description": "Percibir los sonidos a través del oído.",
+    "past": "heard"
+}, {
+    "word": "look",
+    "translations": ["mirar", "buscar"],
+    "description": "Dirigir la vista hacia un objeto o intentar encontrar algo.",
+    "past": "looked"
+}, {
+    "word": "think",
+    "translations": ["pensar"],
+    "description": "Formar o tener ideas o juicios en la mente.",
+    "past": "thought"
+}, {
+    "word": "afraid",
+    "translations": ["asustado"],
+    "description": "Que siente miedo o temor.",
+    "past": null
+}, {
+    "word": "see",
+    "translations": ["ver"],
+    "description": "Percibir a través de los ojos.",
+    "past": "saw"
+}, {
+    "word": "feel",
+    "translations": ["sentir"],
+    "description": "Experimentar sensaciones físicas o emocionales.",
+    "past": "felt"
+}, {
+    "word": "threaten",
+    "translations": ["amenazar"],
+    "description": "Anunciar un daño o peligro contra alguien.",
+    "past": "threatened"
+}, {
+    "word": "laughable",
+    "translations": ["ridiculo"],
+    "description": "Que causa risa por ser absurdo o poco serio.",
+    "past": null
+}, {
+    "word": "toward",
+    "translations": ["hacia"],
+    "description": "En dirección a un lugar o persona.",
+    "past": null
+}, {
+    "word": "swallow",
+    "translations": ["tragar"],
+    "description": "Hacer pasar algo de la boca al estómago.",
+    "past": "swallowed"
+}, {
+    "word": "hug",
+    "translations": ["abrazar"],
+    "description": "Rodear con los brazos a alguien como muestra de afecto.",
+    "past": "hugged"
+}, {
+    "word": "hope",
+    "translations": ["esperanza"],
+    "description": "Sentimiento optimista de que algo deseado sucederá.",
+    "past": null
+}, {
+    "word": "dash",
+    "translations": ["destruir"],
+    "description": "Como 'to dash someone's hopes': destruir las esperanzas de alguien.",
+    "past": "dashed"
+}, {
+    "word": "hurt",
+    "translations": ["doler"],
+    "description": "Sentir o causar dolor físico o emocional.",
+    "past": "hurt"
+}, {
+    "word": "let",
+    "translations": ["dejar"],
+    "description": "Permitir que algo suceda o que alguien haga algo.",
+    "past": "let"
+}, {
+    "word": "cling",
+    "translations": ["aferrarse"],
+    "description": "Sujetarse a algo con fuerza.",
+    "past": "clung"
+}, {
+    "word": "waist",
+    "translations": ["cintura"],
+    "description": "Parte central del cuerpo, entre el pecho y la cadera.",
+    "past": null
+}, {
+    "word": "shake",
+    "translations": ["temblar", "agitar"],
+    "description": "Moverse de forma rápida y violenta, o sacudir algo.",
+    "past": "shook"
+}, {
+    "word": "apologize",
+    "translations": ["disculparse"],
+    "description": "Pedir perdón por una falta o error.",
+    "past": "apologized"
+}, {
+    "word": "among",
+    "translations": ["entre"],
+    "description": "En medio de varias personas o cosas.",
+    "past": null
+}, {
+    "word": "since",
+    "translations": ["ya que"],
+    "description": "Indica causalidad o tiempo desde un momento.",
+    "past": null
+}, {
+    "word": "each",
+    "translations": ["cada"],
+    "description": "Refiere a todos los individuos de un grupo por separado.",
+    "past": null
+}, {
+    "word": "hit",
+    "translations": ["golpe", "alcanzar"],
+    "description": "Impactar contra algo o golpear.",
+    "past": "hit"
+}, {
+    "word": "as long as",
+    "translations": ["mientras"],
+    "description": "Indica una condición: siempre y cuando suceda algo.",
+    "past": null
+}, {
+    "word": "such",
+    "translations": ["semejante", "tal"],
+    "description": "Indica una cualidad extrema o un tipo específico de algo.",
+    "past": null
+}, {
+    "word": "that",
+    "translations": ["eso", "que"],
+    "description": "Pronombre demostrativo o conjunción que une oraciones.",
+    "past": null
+}, {
+    "word": "unless",
+    "translations": ["a menos que"],
+    "description": "Expresa una condición negativa; excepto si.",
+    "past": null
+}, {
+    "word": "enormous",
+    "translations": ["enorme"],
+    "description": "De un tamaño muy superior a lo normal.",
+    "past": null
+}, {
+    "word": "fact",
+    "translations": ["hecho"],
+    "description": "Evento o dato verdadero que ha sucedido.",
+    "past": null
+}, {
+    "word": "stagger",
+    "translations": ["asombrarse"],
+    "description": "Causar gran asombro o tambalearse.",
+    "past": "staggered"
+}, {
+    "word": "lead",
+    "translations": ["conducir"],
+    "description": "Guiar o llevar hacia un resultado.",
+    "past": "led"
+}, {
+    "word": "freeze",
+    "translations": ["congelar"],
+    "description": "Detener el movimiento por completo.",
+    "past": "froze"
+}, {
+    "word": "clutch",
+    "translations": ["agarrar"],
+    "description": "Sujetar algo firmemente con las manos, usualmente por miedo o ansiedad.",
+    "past": "clutched"
+}, {
+    "word": "flicker",
+    "translations": ["parpadear"],
+    "description": "Brillar o arder de forma intermitente, inestable o temblorosa.",
+    "past": "flickered"
+}, {
+    "word": "inhabit",
+    "translations": ["habitar"],
+    "description": "Vivir o residir habitualmente en un lugar o región.",
+    "past": "inhabited"
+}, {
+    "word": "dabble",
+    "translations": ["experimentar"],
+    "description": "Participar en una actividad o área de estudio de manera superficial o no profesional.",
+    "past": "dabbled"
+}, {
+    "word": "tweak",
+    "translations": ["ajustar"],
+    "description": "Hacer pequeños cambios o modificaciones para mejorar o afinar el funcionamiento de algo.",
+    "past": "tweaked"
+}, {
+    "word": "pursue",
+    "translations": ["buscar"],
+    "description": "Seguir a alguien o algo con el fin de alcanzarlo, o esforzarse por lograr un objetivo.",
+    "past": "pursued"
+}, {
+    "word": "corrode",
+    "translations": ["corroer"],
+    "description": "Destruir o dañar lentamente una sustancia (especialmente metal) mediante una reacción química.",
+    "past": "corroded"
+}, {
+    "word": "wince",
+    "translations": ["mueca de dolor"],
+    "description": "Realizar un movimiento involuntario del cuerpo o rostro debido al dolor, la tensión o la vergüenza.",
+    "past": "winced"
+}, {
+    "word": "frown",
+    "translations": ["fruncir el ceño"],
+    "description": "Arrugar la frente para mostrar desaprobación, desagrado, enfado o profunda concentración.",
+    "past": "frowned"
+}, {
+    "word": "betray",
+    "translations": ["traicionar"],
+    "description": "Faltar a la lealtad hacia alguien.",
+    "past": "betrayed"
+}, {
+    "word": "suppress",
+    "translations": ["suprimir"],
+    "description": "Evitar la manifestación de un sentimiento, impulso, proceso o acción.",
+    "past": "suppressed"
+}, {
+    "word": "convey",
+    "translations": ["transmitir"],
+    "description": "Hacer llegar a alguien una idea, un sentimiento o una información.",
+    "past": "conveyed"
+}, {
+    "word": "shudder",
+    "translations": ["estremecerse"],
+    "description": "Temblar de forma repentina e involuntaria a causa del miedo, el frío o el desagrado.",
+    "past": "shuddered"
+}, {
+    "word": "mutter",
+    "translations": ["murmurar"],
+    "description": "Hablar entre dientes, en voz muy baja y de manera poco clara, quejándose de algo.",
+    "past": "muttered"
+}, {
+    "word": "gushed",
+    "translations": ["brotar"],
+    "description": "Fluir o salir con fuerza; también se usa para expresar emociones de manera desbordante.",
+    "past": "gushed"
+}, {
+    "word": "tarnish",
+    "translations": ["manchar"],
+    "description": "Dañar la reputación o el brillo de algo, como un metal o un recuerdo.",
+    "past": "tarnished"
+}, {
+    "word": "shimmer",
+    "translations": ["brillar"],
+    "description": "Reflejar una luz suave y vibrante, como la luz sobre el agua o el aire caliente.",
+    "past": "shimmered"
+}, {
+    "word": "dissipate",
+    "translations": ["disipar"],
+    "description": "Desaparecer o hacer que algo se extienda y pierda fuerza hasta desaparecer.",
+    "past": "dissipated"
+}, {
+    "word": "travel",
+    "translations": ["viajar"],
+    "description": "Viajar a través de una zona o lugar.",
+    "past": "traveled"
+}, {
+    "word": "exude",
+    "translations": ["emanar"],
+    "description": "Emitir o dejar salir (generalmente un olor, sensación o emoción) de manera notable.",
+    "past": "exuded"
+}, {
+    "word": "glove",
+    "translations": ["guante"],
+    "description": "No confundir con 'globe' que es globo.",
+    "past": null
+}, {
+    "word": "reminiscent",
+    "translations": ["que recuerda a"],
+    "description": "Que hace recordar a otra cosa por tener características similares.",
+    "past": null
+}, {
+    "word": "scorn",
+    "translations": ["despreciar"],
+    "description": "Que muestra desprecio o que considera a algo o alguien indigno.",
+    "past": null
+}, {
+    "word": "shrewd",
+    "translations": ["astuto"],
+    "description": "Que tiene mucha capacidad para juzgar situaciones y sacar provecho de ellas.",
+    "past": null
+}, {
+    "word": "leaden",
+    "translations": ["pesado"],
+    "description": "Sentirse pesado o cansado, viene de 'lead' que es plomo.",
+    "past": null
+}, {
+    "word": "bristle",
+    "translations": ["erizarse"],
+    "description": "Reaccionar con rigidez o enfado ante algo (como el pelaje de un animal).",
+    "past": "bristled"
+}, {
+    "word": "sidle",
+    "translations": ["acercarse con sigilo"],
+    "description": "Moverse de forma cautelosa o poco llamativa hacia alguien.",
+    "past": "sidled"
+}, {
+    "word": "grope",
+    "translations": ["buscar"],
+    "description": "Tocar algo buscando a tientas, a menudo sin ver bien.",
+    "past": "groped"
+}, {
+    "word": "cavalry",
+    "translations": ["caballeria"],
+    "description": "Soldados que forman parte de una unidad montada a caballo.",
+    "past": null
+}, {
+    "word": "paltry",
+    "translations": ["insignificante"],
+    "description": "Referido a una cantidad que es muy pequeña o despreciable.",
+    "past": null
+}, {
+    "word": "obnoxious",
+    "translations": ["desagradable"],
+    "description": "Alguien o algo que causa molestia, rechazo o es muy ofensivo.",
+    "past": null
+}, {
+    "word": "scamper",
+    "translations": ["correr"],
+    "description": "Moverse rápidamente, especialmente usado para niños o animales pequeños.",
+    "past": "scampered"
+}, {
+    "word": "fret",
+    "translations": ["preocuparse"],
+    "description": "Estar ansioso o preocupado de manera continua por algo.",
+    "past": "fretted"
+}, {
+    "word": "glad",
+    "translations": ["contento"],
+    "description": "Sentimiento de satisfacción, felicidad o placer.",
+    "past": null
+}, {
+    "word": "sink",
+    "translations": ["hacia el interior"],
+    "description": "'Her words gradually sank into his brain': Sus palabras se fueron grabando poco a poco en su mente.",
+    "past": "sank"
+}, {
+    "word": "chamber",
+    "translations": ["habitacion"],
+    "description": "Habitación privada o estancia principal de un edificio.",
+    "past": null
+}, {
+    "word": "brow",
+    "translations": ["ceja"],
+    "description": "Vello que crece sobre la cuenca del ojo.",
+    "past": null
+}, {
+    "word": "knee",
+    "translations": ["rodilla"],
+    "description": "Articulación que une el muslo con la pierna.",
+    "past": null
+}, {
+    "word": "know",
+    "translations": ["saber"],
+    "description": "Tener conocimiento o información sobre algo.",
+    "past": "knew"
+}, {
+    "word": "sigh",
+    "translations": ["suspirar"],
+    "description": "Inhalación y exhalación profunda, a menudo por cansancio o tristeza.",
+    "past": "sighed"
+}, {
+    "word": "entourage",
+    "translations": ["sequito"],
+    "description": "Grupo de personas que acompaña a alguien importante.",
+    "past": null
+}, {
+    "word": "surround",
+    "translations": ["rodear"],
+    "description": "Estar en todos los lados de algo o alguien.",
+    "past": "surrounded"
+}, {
+    "word": "glimpse",
+    "translations": ["vistazo"],
+    "description": "Ver algo de manera fugaz o incompleta.",
+    "past": "glimpsed"
+}]

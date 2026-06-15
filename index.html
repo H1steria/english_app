@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="EnglishUp" />
+  <title>English</title>
+  <style>
+    :root {
+      --bg:        #0f0f1a;
+      --surface:   #1a1a2e;
+      --card:      #16213e;
+      --accent:    #e94560;
+      --gold:      #f5c518;
+      --teal:      #0f9b8e;
+      --text:      #e8e8f0;
+      --muted:     #7a7a9a;
+      --correct:   #2ecc71;
+      --wrong:     #e74c3c;
+      --radius:    18px;
+      --font:      'Segoe UI', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px; /* Ajuste para mayor margen en móviles */
+      overflow-y: auto;
+    }
+
+    /* ── Main card ── */
+    main {
+      width: 100%;
+      max-width: 480px;
+      /* padding: 4px; */
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    /* Cabecera compacta integrada para estadísticas */
+    .compact-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      padding: 5px 10px;
+      background: var(--surface);
+      border-radius: 10px;
+      border: 1.5px solid #ffffff0a;
+      flex-wrap: wrap;
+      gap: 5px 10px;
+    }
+    .compact-stats strong {
+      color: var(--gold);
+    }
+
+    .word-card {
+      background: linear-gradient(135deg, #1e1e3a, #16213e);
+      border: 1px solid #ffffff12;
+      border-radius: 12px;
+      padding: 16px 16px;
+      text-align: center;
+      box-shadow: 0 4px 20px #0005;
+      position: relative;
+    }
+    .word-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .word-english {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.1;
+    }
+    .word-desc {
+      margin-top: 8px;
+      font-size: 0.82rem;
+      color: #a8edea;
+      line-height: 1.4;
+      opacity: 0.9;
+    }
+
+    /* ── Input area ── */
+    .input-section { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 8px; 
+    }
+    .field-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1.5px solid #ffffff18;
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.95rem;
+      padding: 10px 12px;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+      line-height: 1.4;
+    }
+    textarea:focus { border-color: var(--accent); }
+    textarea::placeholder { color: var(--muted); }
+
+    .past-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .past-row.hidden { display: none; }
+
+    /* ── Buttons ── */
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-skip {
+      background: #ffffff0d;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: -8px;
+    }
+
+    /* ── Estilos para el slider ── */
+    .switch-container {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      user-select: none;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .switch-container input {
+      display: none;
+    }
+    .slider-switch {
+      position: relative;
+      display: inline-block;
+      width: 32px;
+      height: 18px;
+      background-color: rgba(255, 255, 255, 0.15);
+      border-radius: 999px;
+      transition: background-color 0.2s;
+    }
+    .slider-switch::before {
+      content: "";
+      position: absolute;
+      height: 14px;
+      width: 14px;
+      left: 2px;
+      bottom: 2px;
+      background-color: var(--text);
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    input:checked + .slider-switch {
+      background-color: var(--accent);
+    }
+    input:checked + .slider-switch::before {
+      transform: translateX(14px);
+    }
+
+    .switch-container.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ── Feedback ── */
+    #feedback {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 0px;
+      text-align: center;
+    }
+    #feedback.visible { display: flex; }
+    .feedback-desc {
+      font-size: 0.88rem;
+      color: #a8edea;
+      /* line-height: 1.4; */
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #ffffff12;
+      border-radius: 10px;
+      padding: 10px 14px;
+      width: 100%;
+      text-align: left;
+      margin-top: 0px;
+      display: none; /* Se controla dinámicamente */
+    }
+    .feedback-icon {
+      font-size: 4rem;
+      animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+    .feedback-title {
+      font-size: 1.6rem;
+      font-weight: 900;
+    }
+    .feedback-title.correct { color: var(--correct); }
+    .feedback-title.wrong   { color: var(--wrong); }
+
+    /* ── Estilos para los LEDs de respuesta ── */
+    .missing-list p { 
+      font-size: 0.85rem; 
+      color: var(--muted); 
+      margin-bottom: 10px; 
+    }
+    .missing-items-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .led-pill {
+      display: inline-block;
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1.5px solid transparent;
+      transition: all 0.2s ease;
+    }
+    /* Verde - Acierto / Encendido */
+    .led-pill.correct {
+      background: rgba(46, 204, 113, 0.12);
+      color: #2ecc71;
+      border-color: rgba(46, 204, 113, 0.35);
+    }
+    /* Gris - Pendiente / Apagado */
+    .led-pill.missing {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    /* Rojo - Incorrecto / Fallido */
+    .led-pill.incorrect {
+      background: rgba(231, 76, 60, 0.12);
+      color: #e74c3c;
+      border-color: rgba(231, 76, 60, 0.35);
+    }
+
+    /* ── Award / celebration ── */
+    .award-wrap {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .award-wrap.show { display: flex; }
+
+    .award-badge {
+      width: 110px; height: 110px;
+      background: radial-gradient(circle at 40% 35%, #ffe066, #f5c518 60%, #c8860a);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      box-shadow: 0 0 0 8px #f5c51822, 0 0 40px #f5c51855;
+      animation: spinBadge 0.6s cubic-bezier(0.175,0.885,0.32,1.275), glow 2s 0.6s ease-in-out infinite alternate;
+    }
+    .award-text {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    .award-sub { font-size: 0.85rem; color: var(--muted); }
+
+    /* confetti canvas */
+    #confetti { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 200; }
+
+    /* ── Animations ── */
+    @keyframes popIn {
+      0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+      80%  { transform: scale(1.1) rotate(5deg); }
+      100% { transform: scale(1) rotate(0); opacity: 1; }
+    }
+    @keyframes spinBadge {
+      0%   { transform: scale(0) rotate(-180deg); }
+      100% { transform: scale(1) rotate(0); }
+    }
+    @keyframes glow {
+      from { box-shadow: 0 0 0 8px #f5c51822, 0 0 30px #f5c51844; }
+      to   { box-shadow: 0 0 0 12px #f5c51833, 0 0 60px #f5c51888; }
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-8px); }
+      40%     { transform: translateX(8px); }
+      60%     { transform: translateX(-6px); }
+      80%     { transform: translateX(6px); }
+    }
+    .shake { animation: shake 0.4s ease; }
+
+    /* ── Streak banner ── */
+    .streak-banner {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: linear-gradient(90deg, #f5c51822, #e9456022);
+      border: 1px solid #f5c51844;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 0.9rem;
+      color: var(--gold);
+      font-weight: 700;
+    }
+    .streak-banner.show { display: flex; }
+
+    /* ── Score pill ── */
+    .score-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ffffff0a;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin: 0 auto;
+    }
+    .score-pill strong { color: var(--correct); }
+
+    /* loading */
+    .loading-msg {
+      text-align: center;
+      color: var(--muted);
+      padding: 40px 0;
+      font-size: 1rem;
+    }
+
+    /* ── Estilos para el panel de pesos ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 15, 26, 0.95);
+      z-index: 300;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .panel-container {
+      background: var(--card);
+      border: 1px solid #ffffff12;
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 400px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      gap: 12px;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #ffffff12;
+      padding-bottom: 8px;
+    }
+    .panel-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+
+    .panel-list {
+      overflow-y: auto;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-right: 4px;
+    }
+    .panel-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 6px;
+      gap: 8px;
+    }
+    .panel-item .word-name { color: var(--text); font-weight: 600; flex: 1; }
+    .panel-item .word-weight { color: var(--gold); font-weight: bold; }
+
+    .panel-item .item-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      background: #ffffff0a;
+      border: 1px solid #ffffff12;
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 0.85rem;
+      padding: 4px 8px;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .icon-btn.add { color: var(--correct); }
+    .icon-btn.remove { color: var(--wrong); }
+
+    .panel-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .btn-toggle-panel {
+      background: #ffffff0a;
+      color: var(--muted);
+      font-size: 0.8rem;
+      border: 1px solid #ffffff12;
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      width: auto;
+    }
+
+    .panel-tabs {
+      display: flex;
+      gap: 6px;
+    }
+    .panel-tab {
+      flex: 1;
+      text-align: center;
+      padding: 6px 8px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: #ffffff0a;
+      color: var(--muted);
+      border: 1px solid #ffffff12;
+    }
+    .panel-tab.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .panel-empty {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 20px 0;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="confetti"></canvas>
+
+<main id="appMain">
+  <div class="loading-msg">Cargando palabras…</div>
+</main>
+
+<!-- Panel Modal de Pesos -->
+<div class="modal-overlay" id="weightsModal">
+  <div class="panel-container">
+    <div class="panel-header">
+      <div>
+        <div id="panelWordCount" style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">Total: 0 palabras</div>
+      </div>
+      <button class="btn-toggle-panel" id="closePanelBtn">Cerrar</button>
+    </div>
+    <div class="panel-tabs">
+      <div class="panel-tab active" id="tabAll" data-tab="all">Todas</div>
+      <div class="panel-tab" id="tabCustom" data-tab="custom">Mi lista (<span id="customCountTab">0</span>)</div>
+    </div>
+    <div class="panel-list" id="panelList">
+      <!-- Se llena dinámicamente -->
+    </div>
+    <div class="panel-actions" id="panelActionsAll">
+      <button class="btn btn-primary" id="resetWeightsBtn" style="background: var(--wrong); width: 100%;">Restablecer todos</button>
+    </div>
+    <div class="panel-actions" id="panelActionsCustom" style="display:none;">
+      <button class="btn btn-primary" id="clearCustomBtn" style="background: var(--wrong); width: 100%;">Vaciar mi lista</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────
+let words = [];
+let current = null;
+let streak = 0;
+let usedIndices = [];
+let wordCountTrigger = 0;
+let recentlySeen = [];
+const RECENT_LIMIT = 20; // Número máximo de palabras a recordar
+
+// ── Estado de Palabras Completadas (Modo Ciclo) ──
+const COMPLETED_STORAGE_KEY = 'englishup_completed_words';
+let completedWords = loadCompletedWords();
+
+// ── Estado de Diccionario Personalizado ──
+const CUSTOM_STORAGE_KEY = 'englishup_custom_words';
+let customWords = loadCustomWords();
+
+// ── Estado del panel (pestaña activa) ──
+let panelTab = 'all';
+
+function loadCompletedWords() {
+  const saved = localStorage.getItem(COMPLETED_STORAGE_KEY);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return [];
+    }
+  }
+  return [];
+}
+
+function saveCompletedWords() {
+  localStorage.setItem(COMPLETED_STORAGE_KEY, JSON.stringify(completedWords));
+}
+
+function loadCustomWords() {
+  const saved = localStorage.getItem(CUSTOM_STORAGE_KEY);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return [];
+    }
+  }
+  return [];
+}
+
+function saveCustomWords() {
+  localStorage.setItem(CUSTOM_STORAGE_KEY, JSON.stringify(customWords));
+}
+
+// ── Load words ─────────────────────────────────────────
+async function loadWords() {
+  try {
+    const response = await fetch('words.json');
+    if (!response.ok) throw new Error('No se pudo cargar el archivo JSON');
+    const data = await response.json();
+
+    const savedWeights = loadSavedWeights();
+
+    words = data.map(w => {
+      const normalizedWord = w.word.trim();
+      // Verificar si la palabra ya cuenta con un peso en el registro, si no, se inicia en 1
+      const savedWeight = savedWeights[normalizedWord];
+      const weight = (savedWeight !== undefined) ? savedWeight : 1;
+
+      return {
+        ...w,
+        word: normalizedWord,
+        translations: w.translations.map(t => removeAccents(t.toLowerCase().trim())),
+        past: w.past ? removeAccents(w.past.toLowerCase().trim()) : null,
+        weight: weight
+      };
+    });
+
+    // Guardar el estado para consolidar palabras nuevas que no tuvieran registro
+    syncWeightsWithStorage();
+
+    // Limpiar la lista personalizada de palabras que ya no existen en el diccionario base
+    const validWords = new Set(words.map(w => w.word));
+    const cleanedCustom = customWords.filter(w => validWords.has(w));
+    if (cleanedCustom.length !== customWords.length) {
+      customWords = cleanedCustom;
+      saveCustomWords();
+    }
+
+    buildUI();
+    nextWord();
+  } catch(e) {
+    document.getElementById('appMain').innerHTML =
+      `<div class="loading-msg">❌ No se pudo cargar <b>words.json</b>.<br>Asegúrate de tener ambos archivos en la misma carpeta.</div>`;
+  }
+}
+
+// ── Función para eliminar tildes y normalizar texto ────────────────
+function removeAccents(text) {
+  if (!text) return "";
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, ""); // Remueve tildes y diacríticos
+}
+
+// ── Obtener el conjunto base de palabras según el modo activo ──
+function getBaseWordSet() {
+  const customToggle = document.getElementById('customModeToggle');
+  const isCustomActive = customToggle ? customToggle.checked : false;
+
+  if (isCustomActive) {
+    return words.filter(w => customWords.includes(w.word));
+  }
+  return words;
+}
+
+// ── Pick a random word using weighted probabilities ────
+function pickRandom() {
+  if (words.length === 0) return null;
+
+  const cycleToggle = document.getElementById('cycleModeToggle');
+  const customToggle = document.getElementById('customModeToggle');
+  const isCustomActive = customToggle ? customToggle.checked : false;
+  // En modo personalizado, el ciclo se desactiva visualmente, pero respetamos el estado del toggle por si el usuario lo reactiva luego
+  const isCycleActive = !isCustomActive && (cycleToggle ? cycleToggle.checked : false);
+
+  let baseSet = getBaseWordSet();
+
+  if (baseSet.length === 0) {
+    // Lista personalizada vacía: avisar y no continuar
+    return null;
+  }
+
+  let eligibleWords = [...baseSet];
+
+  if (isCycleActive) {
+    // Filtrar las palabras que ya han sido completadas con éxito en el ciclo actual
+    eligibleWords = eligibleWords.filter(w => !completedWords.includes(w.word));
+
+    // Si ya se completaron todas las palabras, se restablece el ciclo
+    if (eligibleWords.length === 0) {
+      completedWords = completedWords.filter(w => !baseSet.some(bw => bw.word === w));
+      saveCompletedWords();
+      eligibleWords = [...baseSet];
+      alert("Ciclo completado. Se han restablecido las palabras para iniciar un nuevo ciclo.");
+    }
+  } else {
+    // Si el ciclo está inactivo, aplicamos la memoria a corto plazo para evitar repeticiones prontas.
+    // Limitamos el búfer dinámicamente al 25% del total de palabras elegibles para no agotar las opciones en vocabularios cortos.
+    const dynamicLimit = Math.min(RECENT_LIMIT, Math.floor(baseSet.length * 0.25));
+    const recentSlice = recentlySeen.slice(-dynamicLimit);
+
+    const filteredByRecent = eligibleWords.filter(w => !recentSlice.includes(w.word));
+    
+    // Solo aplicamos el filtro si nos queda un número viable de palabras para elegir
+    if (filteredByRecent.length > 3) {
+      eligibleWords = filteredByRecent;
+    }
+  }
+
+  // Excluir la palabra actual para evitar repeticiones consecutivas si hay más opciones
+  if (eligibleWords.length > 1) {
+    eligibleWords = eligibleWords.filter(w => w !== current);
+  }
+
+  if (eligibleWords.length === 0) return null;
+  if (eligibleWords.length === 1) return eligibleWords[0];
+
+  // Calcular la suma total de los pesos de las palabras elegibles restantes
+  const totalWeight = eligibleWords.reduce((sum, w) => sum + (w.weight || 1), 0);
+  
+  let randomValue = Math.random() * totalWeight;
+  let cumulativeSum = 0;
+  
+  for (let i = 0; i < eligibleWords.length; i++) {
+    cumulativeSum += (eligibleWords[i].weight || 1);
+    if (randomValue <= cumulativeSum) {
+      return eligibleWords[i];
+    }
+  }
+  
+  return eligibleWords[eligibleWords.length - 1];
+}
+
+function reorderWordsList() {
+  if (words.length <= 1) return;
+  
+  // Determinamos el número de elementos a mover (máximo 50 o el tamaño de la lista si es menor)
+  const countToMove = Math.min(50, words.length);
+  
+  const lastFifty = words.slice(-countToMove);
+  const remaining = words.slice(0, words.length - countToMove);
+  
+  // Reestructuramos el array colocando los últimos elementos al principio
+  words = [...lastFifty, ...remaining];
+}
+
+// ── Build skeleton UI ──────────────────────────────────
+function buildUI() {
+  const main = document.getElementById('appMain');
+  main.innerHTML = `
+    <!-- Tarjeta de palabra sin descripción inicial -->
+    <div class="word-card" id="wordCard">
+      <div class="word-label">¿Cómo se traduce?</div>
+      <div class="word-english" id="wordDisplay">—</div>
+      <div class="word-hint" id="wordHint" style="display:none"></div>
+    </div>
+
+    <!-- Elemento de descripción -->
+    <div class="feedback-desc" id="feedbackDesc"></div>
+
+    <!-- Sección de entrada -->
+    <div class="input-section" id="inputSection">
+      <div>
+        <div class="field-label">Traducciones al español (separadas por coma)</div>
+        <textarea id="translationInput" rows="2"
+          placeholder="ej: ponerse a, llegar a, cuando se pasa…"></textarea>
+      </div>
+
+      <button class="btn btn-primary" id="checkBtn">Comprobar ✓</button>
+      <button class="btn btn-skip" id="skipBtn">Saltar esta palabra →</button>
+    </div>
+
+    <!-- Feedback con descripción incluida -->
+    <div id="feedback">
+      <div class="feedback-icon" id="feedbackIcon"></div>
+      <div class="feedback-title" id="feedbackTitle"></div>
+
+      <div class="award-wrap" id="awardWrap">
+        <div class="award-badge">🏆</div>
+        <div class="award-text" id="awardText">¡Respuesta perfecta!</div>
+        <div class="award-sub">Has escrito todas las traducciones</div>
+      </div>
+
+      <div class="streak-banner" id="streakBanner">🔥 ¡Racha de <span id="streakNum">0</span>!</div>
+
+      <div class="missing-list" id="missingList" style="display:none">
+        <div id="missingItems"></div>
+      </div>
+
+      <button class="btn btn-primary" id="nextBtn" style="margin-top:4px">Siguiente palabra →</button>
+      <button class="btn btn-toggle-panel" id="addCurrentToCustomBtn" style="width:100%; margin-top:4px;">➕ Añadir a mi lista</button>
+    </div>
+
+    <!-- Estadísticas integradas y compactas -->
+    <div class="compact-stats">
+      <span>🔥 Racha: <strong id="streakCount">0</strong></span>
+      
+      <label class="switch-container" id="hideOnWriteLabel" title="Ocultar palabra al empezar a escribir">
+        <input type="checkbox" id="hideOnWriteToggle" checked>
+        <span class="slider-switch"></span>
+        <span style="font-size: 0.72rem;">Ocultar</span>
+      </label>
+
+      <label class="switch-container" id="cycleModeLabel" title="Excluir palabras correctas hasta completar todas">
+        <input type="checkbox" id="cycleModeToggle" checked>
+        <span class="slider-switch"></span>
+        <span style="font-size: 0.72rem;">Ciclo</span>
+      </label>
+
+      <label class="switch-container" id="customModeLabel" title="Practicar solo las palabras de mi lista personalizada">
+        <input type="checkbox" id="customModeToggle">
+        <span class="slider-switch"></span>
+        <span style="font-size: 0.72rem;">Mi lista</span>
+      </label>
+
+      <button class="btn-toggle-panel" id="openPanelBtn">⚙️ Pesos</button>
+    </div>
+  `;
+
+  document.getElementById('checkBtn').addEventListener('click', checkAnswer);
+  document.getElementById('nextBtn').addEventListener('click', nextWord);
+  document.getElementById('skipBtn').addEventListener('click', skipWord);
+  document.getElementById('openPanelBtn').addEventListener('click', openWeightsPanel);
+  document.getElementById('addCurrentToCustomBtn').addEventListener('click', addCurrentToCustomList);
+
+  // Escuchar el cambio en el toggle de ciclo para actualizar estadísticas inmediatamente
+  const cycleToggle = document.getElementById('cycleModeToggle');
+  if (cycleToggle) {
+    cycleToggle.addEventListener('change', updateStats);
+  }
+
+  // Escuchar el cambio en el toggle de lista personalizada
+  const customToggle = document.getElementById('customModeToggle');
+  if (customToggle) {
+    customToggle.addEventListener('change', () => {
+      if (customToggle.checked) {
+        if (customWords.length === 0) {
+          alert('Tu lista personalizada está vacía. Añade palabras desde el panel de Pesos (⚙️) antes de activar este modo.');
+          customToggle.checked = false;
+          return;
+        }
+        // Desactivar el modo ciclo al activar el modo personalizado
+        if (cycleToggle) cycleToggle.checked = false;
+      }
+      applyModeAvailability();
+      updateStats();
+      nextWord();
+    });
+  }
+  
+  const transInput = document.getElementById('translationInput');
+  
+  transInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault(); 
+      e.stopPropagation();
+      checkAnswer(); 
+    }
+  });
+
+  // Ocultar dinámicamente la palabra al ingresar cualquier caracter si el conmutador está activo
+  transInput.addEventListener('input', () => {
+    const toggle = document.getElementById('hideOnWriteToggle');
+    const wordDisplay = document.getElementById('wordDisplay');
+    if (toggle && toggle.checked) {
+      if (transInput.value.length > 0) {
+        wordDisplay.style.visibility = 'hidden';
+      } else {
+        wordDisplay.style.visibility = 'visible';
+      }
+    }
+  });
+
+  // Escuchador global para avanzar con Enter cuando el feedback está visible
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const feedback = document.getElementById('feedback');
+      const modal = document.getElementById('weightsModal');
+      const isModalActive = modal && modal.classList.contains('active');
+
+      if (feedback && feedback.classList.contains('visible') && !isModalActive) {
+        e.preventDefault();
+        nextWord();
+      }
+    }
+  });
+
+  applyModeAvailability();
+  focusTextInput();
+}
+
+// ── Habilitar/deshabilitar el modo ciclo según el modo personalizado ──
+function applyModeAvailability() {
+  const customToggle = document.getElementById('customModeToggle');
+  const cycleToggle = document.getElementById('cycleModeToggle');
+  const cycleLabel = document.getElementById('cycleModeLabel');
+  if (!customToggle || !cycleToggle || !cycleLabel) return;
+
+  if (customToggle.checked) {
+    cycleToggle.disabled = true;
+    cycleLabel.classList.add('disabled');
+  } else {
+    cycleToggle.disabled = false;
+    cycleLabel.classList.remove('disabled');
+  }
+}
+
+// ── Show a new word ────────────────────────────────────
+function nextWord() {
+  wordCountTrigger++;
+  if (wordCountTrigger >= 10) {
+    wordCountTrigger = 0;
+    reorderWordsList();
+  }
+
+  current = pickRandom();
+
+  if (!current) {
+    // No hay palabras disponibles (p. ej. lista personalizada vacía)
+    document.getElementById('wordDisplay').textContent = '—';
+    document.getElementById('wordHint').textContent = '';
+    const descEl = document.getElementById('feedbackDesc');
+    if (descEl) {
+      descEl.textContent = 'Tu lista personalizada está vacía. Añade palabras desde el panel de Pesos (⚙️).';
+      descEl.style.display = 'block';
+    }
+    document.getElementById('inputSection').style.display = 'none';
+    document.getElementById('feedback').className = '';
+    return;
+  }
+
+  // Registrar en la memoria a corto plazo para evitar repetición inmediata
+  recentlySeen.push(current.word);
+  const baseSet = getBaseWordSet();
+  const dynamicLimit = Math.min(RECENT_LIMIT, Math.floor(baseSet.length * 0.25));
+  if (recentlySeen.length > dynamicLimit) {
+    recentlySeen.shift(); // Eliminar la palabra más antigua del búfer
+  }
+
+  document.getElementById('wordDisplay').style.visibility = 'visible';
+  document.getElementById('wordDisplay').textContent = current.word;
+  document.getElementById('wordHint').textContent = '';
+
+  // Ocultar descripción anterior del feedback
+  const feedbackDescEl = document.getElementById('feedbackDesc');
+  if (feedbackDescEl) {
+    feedbackDescEl.style.display = 'none';
+    feedbackDescEl.textContent = '';
+  }
+
+  // reset inputs & feedback
+  document.getElementById('translationInput').value = '';
+
+  document.getElementById('inputSection').style.display = '';
+  document.getElementById('feedback').className = '';
+  document.getElementById('awardWrap').className = 'award-wrap';
+  document.getElementById('streakBanner').className = 'streak-banner';
+  document.getElementById('missingList').style.display = 'none';
+
+  updateStats();
+  focusTextInput();
+}
+
+// ── Focus text input helper ─────────────────────────────
+function focusTextInput() {
+  // Un retraso pequeño permite asegurar que el elemento esté renderizado y listo en WebView
+  setTimeout(() => {
+    const input = document.getElementById('translationInput');
+    if (input) {
+      input.focus();
+      input.select();
+    }
+  }, 80);
+}
+
+// ── Modificar para permitir alternar el estado del botón ──
+function updateAddCurrentToCustomBtn() {
+  const btn = document.getElementById('addCurrentToCustomBtn');
+  if (!btn || !current) return;
+
+  if (customWords.includes(current.word)) {
+    btn.textContent = '➖ Quitar de mi lista';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.background = 'rgba(231, 76, 60, 0.15)';
+    btn.style.color = 'var(--wrong)';
+    btn.style.borderColor = 'rgba(231, 76, 60, 0.3)';
+  } else {
+    btn.textContent = '➕ Añadir a mi lista';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.background = '';
+    btn.style.color = '';
+    btn.style.borderColor = '';
+  }
+}
+
+// ── Modificar para añadir o quitar el elemento según corresponda ──
+function addCurrentToCustomList() {
+  if (!current) return;
+
+  if (customWords.includes(current.word)) {
+    // Si ya existe, se elimina
+    customWords = customWords.filter(w => w !== current.word);
+    saveCustomWords();
+
+    // Si el modo "Mi lista" está activo y la lista queda vacía, se desactiva
+    const customToggle = document.getElementById('customModeToggle');
+    if (customToggle && customToggle.checked && customWords.length === 0) {
+      customToggle.checked = false;
+      applyModeAvailability();
+      updateStats();
+      nextWord();
+      return;
+    }
+  } else {
+    // Si no existe, se añade
+    customWords.push(current.word);
+    saveCustomWords();
+  }
+
+  updateAddCurrentToCustomBtn();
+}
+
+// ── Skip ───────────────────────────────────────────────
+function skipWord() {
+  streak = 0;
+  updateStats();
+  nextWord();
+}
+
+// ── Parse user input ───────────────────────────────────
+function parseInput(raw) {
+  return removeAccents(raw.toLowerCase().trim())
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
+// ── Funciones auxiliares para comparación parcial y clasificación ──
+function getPrefixScore(expected, user) {
+  let score = 0;
+  for (let i = 0; i < Math.min(expected.length, user.length); i++) {
+    if (expected[i] === user[i]) {
+      score++;
+    } else {
+      break;
+    }
+  }
+  return score;
+}
+
+// ── Funciones auxiliares para comparación parcial ──
+function findBestPartialMatch(expected, userItems) {
+  let bestMatch = "";
+  let maxScore = 0;
+
+  userItems.forEach(user => {
+    const score = getPrefixScore(expected, user);
+    if (score > maxScore) {
+      maxScore = score;
+      bestMatch = user;
+    }
+  });
+  return bestMatch;
+}
+
+function highlightPartial(expected, user) {
+  if (!user) return expected;
+  let html = "";
+  for (let i = 0; i < expected.length; i++) {
+    if (i < user.length && expected[i] === user[i]) {
+      html += `<b style="color: var(--correct); font-weight: bold;">${expected[i]}</b>`;
+    } else {
+      html += `<span style="opacity: 0.5;">${expected[i]}</span>`;
+    }
+  }
+  return html;
+}
+
+// ── Calcular el número de "competidores" para el cálculo de peso ──
+// En lugar de usar siempre el total del diccionario, usamos el número de
+// palabras actualmente elegibles para ser seleccionadas (mismo conjunto
+// que usa pickRandom), ya que son las que realmente compiten por el sorteo.
+function getReferenceWordCount() {
+  const cycleToggle = document.getElementById('cycleModeToggle');
+  const customToggle = document.getElementById('customModeToggle');
+  const isCustomActive = customToggle ? customToggle.checked : false;
+  const isCycleActive = !isCustomActive && (cycleToggle ? cycleToggle.checked : false);
+
+  let baseSet = getBaseWordSet();
+  if (baseSet.length === 0) return Math.max(words.length, 1);
+
+  let eligible = [...baseSet];
+
+  if (isCycleActive) {
+    eligible = eligible.filter(w => !completedWords.includes(w.word));
+    if (eligible.length === 0) {
+      eligible = [...baseSet];
+    }
+  }
+
+  // Aseguramos un mínimo de 1 para evitar divisiones entre cero
+  return Math.max(eligible.length, 1);
+}
+
+// ── Check answer ─────────────────────────
+function checkAnswer() {
+  if (!current) return;
+
+  document.getElementById('wordDisplay').style.visibility = 'visible';
+
+  const rawTrans = document.getElementById('translationInput').value;
+  const userItems = parseInput(rawTrans);
+
+  const pastPrefix = "su pasado es";
+  let pastAttempt = "";
+  let translationAttempts = [];
+
+  // Clasificar de forma inteligente las entradas del usuario
+  userItems.forEach(item => {
+    if (item.startsWith(pastPrefix)) {
+      pastAttempt = item.replace(pastPrefix, "").trim();
+    } else if (current.past) {
+      // Evaluamos si el término se asemeja más al pasado o a alguna traducción legítima
+      const scorePast = getPrefixScore(current.past, item);
+      let maxScoreTrans = 0;
+      current.translations.forEach(t => {
+        maxScoreTrans = Math.max(maxScoreTrans, getPrefixScore(t, item));
+      });
+
+      if (item === current.past) {
+        pastAttempt = item;
+      } else if (scorePast > maxScoreTrans && scorePast > 0) {
+        pastAttempt = item;
+      } else {
+        translationAttempts.push(item);
+      }
+    } else {
+      translationAttempts.push(item);
+    }
+  });
+
+  // --- comprobar traducciones ---
+  const required = [...current.translations];
+  const missing  = required.filter(r => !translationAttempts.includes(r));
+  const transOk  = missing.length === 0;
+
+  // --- comprobar pasado ---
+  const pastOk = current.past ? (pastAttempt === current.past) : true;
+  const allCorrect = transOk && pastOk;
+
+  if (allCorrect) {
+    streak++;
+    if (current) {
+      current.weight = 1; // Restablecer peso al acertar
+      syncWeightsWithStorage(); // Guardar cambio de forma permanente
+
+      // Si el modo ciclo está activo, registrar la palabra como completada
+      const cycleToggle = document.getElementById('cycleModeToggle');
+      const customToggle = document.getElementById('customModeToggle');
+      const isCustomActive = customToggle ? customToggle.checked : false;
+      if (!isCustomActive && cycleToggle && cycleToggle.checked) {
+        if (!completedWords.includes(current.word)) {
+          completedWords.push(current.word);
+          saveCompletedWords();
+        }
+      }
+    }
+  } else {
+    streak = 0;
+    
+    // OMITIR DE RECENTLY SEEN: Si la palabra se falla, la eliminamos inmediatamente 
+    // del búfer de recientes para que su peso elevado tenga efecto en la próxima selección.
+    recentlySeen = recentlySeen.filter(w => w !== current.word);
+
+    if (current) {
+      // Usamos el número de palabras actualmente elegibles (no el total del
+      // diccionario) como referencia, para que el peso produzca la
+      // probabilidad deseada dentro del conjunto que realmente compite.
+      const referenceWordsCount = getReferenceWordCount();
+      const referenceOthers = Math.max(referenceWordsCount - 1, 1);
+
+      // 1. Si es el primer fallo, calculamos un peso inicial elevado
+      if (!current.weight || current.weight <= 1) {
+        const targetProbability = 0.20;
+        current.weight = Math.ceil((targetProbability * referenceOthers) / (1 - targetProbability));
+      } else {
+        // 2. Si es un fallo consecutivo, incrementamos el peso de forma lineal
+        const linearIncrement = Math.ceil(referenceWordsCount * 0.15);
+        current.weight = current.weight + linearIncrement;
+      }
+      
+      syncWeightsWithStorage(); // Guardar cambio de forma permanente
+    }
+  }
+  updateStats();
+
+  // ocultar entrada, mostrar feedback
+  document.getElementById('inputSection').style.display = 'none';
+  const fb = document.getElementById('feedback');
+  fb.className = 'visible';
+
+  updateAddCurrentToCustomBtn();
+
+  const descEl = document.getElementById('feedbackDesc');
+  if (current.description) {
+    descEl.textContent = current.description;
+    descEl.style.display = 'block';
+  } else {
+    descEl.style.display = 'none';
+  }
+
+  const title = document.getElementById('feedbackTitle');
+
+  if (allCorrect) {
+    title.textContent = '¡Correcto!';
+    title.className   = 'feedback-title correct';
+
+    document.getElementById('awardWrap').className = 'award-wrap show';
+    document.getElementById('awardText').textContent = '¡Respuesta perfecta!';
+    launchConfetti();
+
+    if (streak >= 3) {
+      document.getElementById('streakBanner').className = 'streak-banner show';
+      document.getElementById('streakNum').textContent = streak;
+    }
+  } else {
+    title.textContent = transOk ? 'Casi… faltó el pasado' : 'Revisa tus respuestas';
+    title.className   = 'feedback-title wrong';
+    document.getElementById('wordCard').classList.add('shake');
+    setTimeout(() => document.getElementById('wordCard').classList.remove('shake'), 450);
+
+    const expectedItems = [...current.translations];
+    if (current.past) {
+      expectedItems.push(`su pasado es ${current.past}`);
+    }
+
+    // Filtrar los elementos incorrectos excluyendo el intento del pasado
+    const incorrectItems = userItems.filter(item => {
+      const cleanItem = item.startsWith(pastPrefix) ? item.replace(pastPrefix, "").trim() : item;
+      if (current.past && cleanItem === pastAttempt) {
+        return false; 
+      }
+      return !current.translations.includes(cleanItem);
+    });
+
+    let ledHTML = '';
+
+    expectedItems.forEach(item => {
+      let isMatch = false;
+      if (item.startsWith(pastPrefix)) {
+        isMatch = (pastAttempt === current.past);
+      } else {
+        isMatch = translationAttempts.includes(item);
+      }
+
+      let labelContent = item;
+      if (!isMatch) {
+        if (item.startsWith(pastPrefix)) {
+          const highlightedPast = highlightPartial(current.past, pastAttempt);
+          labelContent = `su pasado es ${highlightedPast}`;
+        } else {
+          const bestUserItem = findBestPartialMatch(item, translationAttempts);
+          labelContent = highlightPartial(item, bestUserItem);
+        }
+      }
+
+      ledHTML += `<span class="led-pill ${isMatch ? 'correct' : 'missing'}">${labelContent}</span>`;
+    });
+
+    incorrectItems.forEach(item => {
+      ledHTML += `<span class="led-pill incorrect">${item}</span>`;
+    });
+
+    const missingEl = document.getElementById('missingList');
+    const missingItems = document.getElementById('missingItems');
+    
+    missingEl.style.display = '';
+    missingItems.innerHTML = `<div class="missing-items-container">${ledHTML}</div>`;
+  }
+}
+
+// ── Persistencia de Pesos en LocalStorage ────────────────
+const WEIGHTS_STORAGE_KEY = 'englishup_word_weights';
+
+function loadSavedWeights() {
+  const saved = localStorage.getItem(WEIGHTS_STORAGE_KEY);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return {};
+    }
+  }
+  return {};
+}
+
+function syncWeightsWithStorage() {
+  const savedWeights = loadSavedWeights();
+  
+  // Guardar o actualizar únicamente los pesos de las palabras cargadas
+  words.forEach(w => {
+    savedWeights[w.word] = w.weight;
+  });
+  
+  localStorage.setItem(WEIGHTS_STORAGE_KEY, JSON.stringify(savedWeights));
+}
+
+// ── Stats ──────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('streakCount').textContent = streak;
+}
+
+// ── Confetti ───────────────────────────────────────────
+function launchConfetti() {
+  const canvas = document.getElementById('confetti');
+  const ctx    = canvas.getContext('2d');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const pieces = Array.from({length: 80}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * -canvas.height * 0.5,
+    r: Math.random() * 7 + 4,
+    d: Math.random() * 80 + 20,
+    color: ['#f5c518','#e94560','#0f9b8e','#fff','#ff6b6b','#a8edea'][Math.floor(Math.random()*6)],
+    tilt: Math.random() * 20 - 10,
+    tiltAngle: 0,
+    tiltSpeed: Math.random() * 0.1 + 0.05
+  }));
+
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      ctx.beginPath();
+      ctx.lineWidth = p.r;
+      ctx.strokeStyle = p.color;
+      ctx.moveTo(p.x + p.tilt + p.r / 4, p.y);
+      ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 4);
+      ctx.stroke();
+      p.tiltAngle += p.tiltSpeed;
+      p.y += (Math.cos(frame / 30) + 1.5 + p.r / 5);
+      p.x += Math.sin(frame / 20) * 1.5;
+      p.tilt = Math.sin(p.tiltAngle) * 15;
+    });
+    frame++;
+    if (frame < 200) requestAnimationFrame(draw);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  draw();
+}
+
+// ── Funciones para el Panel de Pesos / Diccionario Personalizado ────────
+function openWeightsPanel() {
+  const modal = document.getElementById('weightsModal');
+
+  // Actualizar el total de palabras en el panel
+  const countEl = document.getElementById('panelWordCount');
+  if (countEl) {
+    countEl.textContent = `Total: ${words.length} palabras`;
+  }
+
+  const customCountTab = document.getElementById('customCountTab');
+  if (customCountTab) {
+    customCountTab.textContent = customWords.length;
+  }
+
+  renderPanelList();
+  modal.classList.add('active');
+}
+
+function switchPanelTab(tab) {
+  panelTab = tab;
+
+  document.getElementById('tabAll').classList.toggle('active', tab === 'all');
+  document.getElementById('tabCustom').classList.toggle('active', tab === 'custom');
+
+  document.getElementById('panelActionsAll').style.display = (tab === 'all') ? '' : 'none';
+  document.getElementById('panelActionsCustom').style.display = (tab === 'custom') ? '' : 'none';
+
+  renderPanelList();
+}
+
+function renderPanelList() {
+  const listContainer = document.getElementById('panelList');
+  listContainer.innerHTML = '';
+
+  const savedWeights = loadSavedWeights();
+
+  let listToRender;
+  if (panelTab === 'custom') {
+    listToRender = words.filter(w => customWords.includes(w.word));
+  } else {
+    listToRender = [...words];
+  }
+
+  // Ordenar palabras por peso (las de mayor peso al principio)
+  const sortedWords = [...listToRender].sort((a, b) => {
+    const weightA = savedWeights[a.word] !== undefined ? savedWeights[a.word] : 1;
+    const weightB = savedWeights[b.word] !== undefined ? savedWeights[b.word] : 1;
+    return weightB - weightA;
+  });
+
+  if (sortedWords.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'panel-empty';
+    empty.textContent = (panelTab === 'custom')
+      ? 'Tu lista personalizada está vacía. Pulsa ➕ en cualquier palabra de "Todas" para añadirla.'
+      : 'No hay palabras.';
+    listContainer.appendChild(empty);
+    return;
+  }
+
+  sortedWords.forEach(w => {
+    const weight = savedWeights[w.word] !== undefined ? savedWeights[w.word] : 1;
+    const isCustom = customWords.includes(w.word);
+
+    const item = document.createElement('div');
+    item.className = 'panel-item';
+
+    const toggleBtn = isCustom
+      ? `<button class="icon-btn remove" data-word="${w.word}" data-action="remove-custom" title="Quitar de mi lista">✖</button>`
+      : `<button class="icon-btn add" data-word="${w.word}" data-action="add-custom" title="Añadir a mi lista">➕</button>`;
+
+    item.innerHTML = `
+      <span class="word-name">${w.word}</span>
+      <span class="word-weight" style="${weight > 1 ? 'color: var(--accent);' : ''}">x${weight}</span>
+      <div class="item-actions">${toggleBtn}</div>
+    `;
+    listContainer.appendChild(item);
+  });
+
+  // Asignar listeners a los botones de añadir/quitar
+  listContainer.querySelectorAll('[data-action="add-custom"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const word = btn.getAttribute('data-word');
+      if (!customWords.includes(word)) {
+        customWords.push(word);
+        saveCustomWords();
+      }
+      const customCountTab = document.getElementById('customCountTab');
+      if (customCountTab) customCountTab.textContent = customWords.length;
+      renderPanelList();
+    });
+  });
+
+  listContainer.querySelectorAll('[data-action="remove-custom"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const word = btn.getAttribute('data-word');
+      customWords = customWords.filter(w => w !== word);
+      saveCustomWords();
+      const customCountTab = document.getElementById('customCountTab');
+      if (customCountTab) customCountTab.textContent = customWords.length;
+      renderPanelList();
+
+      // Si la lista personalizada queda vacía y el modo está activo, desactivarlo
+      const customToggle = document.getElementById('customModeToggle');
+      if (customToggle && customToggle.checked && customWords.length === 0) {
+        customToggle.checked = false;
+        applyModeAvailability();
+        updateStats();
+        nextWord();
+      }
+    });
+  });
+}
+
+function closeWeightsPanel() {
+  document.getElementById('weightsModal').classList.remove('active');
+}
+
+function resetAllWeights() {
+  if (confirm('¿Deseas restablecer todos los pesos a 1?')) {
+    localStorage.removeItem(WEIGHTS_STORAGE_KEY);
+    words.forEach(w => {
+      w.weight = 1;
+    });
+    syncWeightsWithStorage();
+    closeWeightsPanel();
+  }
+}
+
+function clearCustomList() {
+  if (confirm('¿Deseas vaciar tu lista personalizada?')) {
+    customWords = [];
+    saveCustomWords();
+
+    const customToggle = document.getElementById('customModeToggle');
+    if (customToggle && customToggle.checked) {
+      customToggle.checked = false;
+      applyModeAvailability();
+      updateStats();
+      nextWord();
+    }
+
+    const customCountTab = document.getElementById('customCountTab');
+    if (customCountTab) customCountTab.textContent = customWords.length;
+    renderPanelList();
+  }
+}
+
+// Asignar listeners globales para cerrar, reiniciar pesos, pestañas y limpiar lista
+document.getElementById('closePanelBtn').addEventListener('click', closeWeightsPanel);
+document.getElementById('resetWeightsBtn').addEventListener('click', resetAllWeights);
+document.getElementById('clearCustomBtn').addEventListener('click', clearCustomList);
+document.getElementById('tabAll').addEventListener('click', () => switchPanelTab('all'));
+document.getElementById('tabCustom').addEventListener('click', () => switchPanelTab('custom'));
+
+// ── Boot ───────────────────────────────────────────────
+loadWords();
+</script>
+</body>
+</html>
