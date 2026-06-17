@@ -482,6 +482,16 @@
       font-size: 0.85rem;
       padding: 20px 0;
     }
+
+    /* ── Estilo para imágenes a ancho completo ── */
+    .responsive-image {
+      width: 100%;
+      height: auto;
+      max-height: none;
+      display: block;
+      border-radius: 8px;
+      margin: 10px auto 0 auto;
+    }
   </style>
 </head>
 <body>
@@ -526,6 +536,8 @@ let usedIndices = [];
 let wordCountTrigger = 0;
 let recentlySeen = [];
 const RECENT_LIMIT = 20; // Número máximo de palabras a recordar
+let currentMode = 'en-es'; // Modos posibles: 'en-es', 'img-en', 'sentence'
+let currentSentence = null; // Guardará la oración seleccionada en el modo 'sentence'
 
 // ── Estado de Palabras Completadas (Modo Ciclo) ──
 const COMPLETED_STORAGE_KEY = 'englishup_completed_words';
@@ -581,15 +593,22 @@ async function loadWords() {
 
     words = data.map(w => {
       const normalizedWord = w.word.trim();
-      // Verificar si la palabra ya cuenta con un peso en el registro, si no, se inicia en 1
       const savedWeight = savedWeights[normalizedWord];
       const weight = (savedWeight !== undefined) ? savedWeight : 1;
+
+      // Procesar oraciones si existen en la palabra
+      const processedSentences = w.sentences ? w.sentences.map(s => ({
+        sentence: s.sentence,
+        fill: removeAccents(s.fill.toLowerCase().trim())
+      })) : null;
 
       return {
         ...w,
         word: normalizedWord,
         translations: w.translations.map(t => removeAccents(t.toLowerCase().trim())),
         past: w.past ? removeAccents(w.past.toLowerCase().trim()) : null,
+        sentences: processedSentences,
+        image: w.image || null, // Guardar la imagen base64 si existe
         weight: weight
       };
     });
@@ -730,7 +749,7 @@ function buildUI() {
     <!-- Sección de entrada -->
     <div class="input-section" id="inputSection">
       <div>
-        <div class="field-label">Traducciones al español (separadas por coma)</div>
+        <div class="field-label" id="inputLabel">Traducciones al español (separadas por coma)</div>
         <textarea id="translationInput" rows="2"
           placeholder="ej: ponerse a, llegar a, cuando se pasa…"></textarea>
       </div>
@@ -885,7 +904,6 @@ function nextWord() {
   current = pickRandom();
 
   if (!current) {
-    // No hay palabras disponibles (p. ej. lista personalizada vacía)
     document.getElementById('wordDisplay').textContent = '—';
     document.getElementById('wordHint').textContent = '';
     const descEl = document.getElementById('feedbackDesc');
@@ -898,17 +916,90 @@ function nextWord() {
     return;
   }
 
+  // Determinar modos disponibles para esta palabra específica
+  let availableModes = ['en-es'];
+
+  if (current.image) {
+    availableModes.push('img-en');
+  }
+  if (current.sentences && current.sentences.length > 0) {
+    availableModes.push('sentence');
+  }
+
+  // Elegir modo aleatorio entre los disponibles
+  currentMode = availableModes[Math.floor(Math.random() * availableModes.length)];
+  currentSentence = null;
+
+  // Adaptar la interfaz gráfica según el modo elegido
+  const wordDisplay = document.getElementById('wordDisplay');
+  const wordLabel = document.querySelector('.word-label');
+  const wordHint = document.getElementById('wordHint');
+  const transInput = document.getElementById('translationInput');
+  const inputLabel = document.getElementById('inputLabel');
+
+  wordDisplay.style.visibility = 'visible';
+  wordHint.style.display = 'none';
+  wordHint.innerHTML = '';
+  
+  // Restablecer el tamaño de letra por defecto (2rem definido en CSS)
+  wordDisplay.style.fontSize = ''; 
+
+  if (currentMode === 'en-es') {
+    wordLabel.textContent = '¿Cómo se traduce?';
+    wordDisplay.textContent = current.word;
+    if (inputLabel) inputLabel.textContent = 'Traducciones al español (separadas por coma)';
+    transInput.placeholder = 'ej: ponerse a, llegar a…';
+    
+    if (current.image) {
+      wordHint.innerHTML = `<button class="btn-toggle-panel" id="hintBtn" style="margin-top:8px;">Ver imagen de pista 👁️</button>
+                            <div id="hintContent" style="display:none; margin-top:10px;"><img src="${current.image}" class="responsive-image"></div>`;
+      wordHint.style.display = 'block';
+      setupHintListener();
+    }
+  }
+  else if (currentMode === 'img-en') {
+    wordLabel.textContent = '¿Qué palabra representa esta imagen?';
+    wordDisplay.innerHTML = `<img src="${current.image}" class="responsive-image">`;
+    if (inputLabel) inputLabel.textContent = 'Palabra en inglés';
+    transInput.placeholder = 'Escribe la palabra en inglés…';
+
+    if (current.description) {
+      wordHint.innerHTML = `<button class="btn-toggle-panel" id="hintBtn" style="margin-top:8px;">Ver descripción de ayuda 👁️</button>
+                            <div id="hintContent" style="display:none; margin-top:10px; font-size:0.85rem; color:var(--muted);">${current.description}</div>`;
+      wordHint.style.display = 'block';
+      setupHintListener();
+    }
+  }
+  else if (currentMode === 'sentence') {
+    wordLabel.textContent = 'Completa el espacio en blanco de la oración';
+    
+    const randomIdx = Math.floor(Math.random() * current.sentences.length);
+    currentSentence = current.sentences[randomIdx];
+    
+    wordDisplay.textContent = currentSentence.sentence;
+    
+    // Reducir tamaño de fuente para mejorar legibilidad de textos largos
+    wordDisplay.style.fontSize = '1.25rem'; 
+    
+    if (inputLabel) inputLabel.textContent = 'Escribe la palabra que falta';
+    transInput.placeholder = 'Escribe la respuesta aquí…';
+
+    // Agregar pista de imagen adaptada a ancho completo
+    if (current.image) {
+      wordHint.innerHTML = `<button class="btn-toggle-panel" id="hintBtn" style="margin-top:8px;">Ver imagen 👁️</button>
+                            <div id="hintContent" style="display:none; margin-top:10px;"><img src="${current.image}" class="responsive-image"></div>`;
+      wordHint.style.display = 'block';
+      setupHintListener();
+    }
+  }
+
   // Registrar en la memoria a corto plazo para evitar repetición inmediata
   recentlySeen.push(current.word);
   const baseSet = getBaseWordSet();
   const dynamicLimit = Math.min(RECENT_LIMIT, Math.floor(baseSet.length * 0.25));
   if (recentlySeen.length > dynamicLimit) {
-    recentlySeen.shift(); // Eliminar la palabra más antigua del búfer
+    recentlySeen.shift();
   }
-
-  document.getElementById('wordDisplay').style.visibility = 'visible';
-  document.getElementById('wordDisplay').textContent = current.word;
-  document.getElementById('wordHint').textContent = '';
 
   // Ocultar descripción anterior del feedback
   const feedbackDescEl = document.getElementById('feedbackDesc');
@@ -1081,51 +1172,194 @@ function checkAnswer() {
 
   const rawTrans = document.getElementById('translationInput').value;
   const userItems = parseInput(rawTrans);
+  const userInputSingle = removeAccents(rawTrans.toLowerCase().trim());
 
   const pastPrefix = "su pasado es";
   let pastAttempt = "";
-  let translationAttempts = [];
+  let allCorrect = false;
+  let transOk = false;
+  let wordOk = false;
 
-  // Clasificar de forma inteligente las entradas del usuario
-  userItems.forEach(item => {
-    if (item.startsWith(pastPrefix)) {
-      pastAttempt = item.replace(pastPrefix, "").trim();
-    } else if (current.past) {
-      // Evaluamos si el término se asemeja más al pasado o a alguna traducción legítima
-      const scorePast = getPrefixScore(current.past, item);
-      let maxScoreTrans = 0;
-      current.translations.forEach(t => {
-        maxScoreTrans = Math.max(maxScoreTrans, getPrefixScore(t, item));
-      });
+  // ── 1. EVALUAR RESPUESTA SEGÚN EL MODO DE JUEGO ACTIVO ──
+  if (currentMode === 'en-es') {
+    let translationAttempts = [];
 
-      if (item === current.past) {
-        pastAttempt = item;
-      } else if (scorePast > maxScoreTrans && scorePast > 0) {
-        pastAttempt = item;
+    // Clasificar inteligentemente las entradas del usuario (traducción vs pasado)
+    userItems.forEach(item => {
+      if (item.startsWith(pastPrefix)) {
+        pastAttempt = item.replace(pastPrefix, "").trim();
+      } else if (current.past) {
+        const scorePast = getPrefixScore(current.past, item);
+        let maxScoreTrans = 0;
+        current.translations.forEach(t => {
+          maxScoreTrans = Math.max(maxScoreTrans, getPrefixScore(t, item));
+        });
+
+        if (item === current.past) {
+          pastAttempt = item;
+        } else if (scorePast > maxScoreTrans && scorePast > 0) {
+          pastAttempt = item;
+        } else {
+          translationAttempts.push(item);
+        }
       } else {
         translationAttempts.push(item);
       }
-    } else {
-      translationAttempts.push(item);
+    });
+
+    const required = [...current.translations];
+    const missing = required.filter(r => !translationAttempts.includes(r));
+    transOk = missing.length === 0;
+
+    const pastOk = current.past ? (pastAttempt === current.past) : true;
+    allCorrect = transOk && pastOk;
+
+    // Generar la visualización del feedback de errores si no es correcto
+    if (!allCorrect) {
+      const expectedItems = [...current.translations];
+      if (current.past) {
+        expectedItems.push(`su pasado es ${current.past}`);
+      }
+
+      const incorrectItems = userItems.filter(item => {
+        const cleanItem = item.startsWith(pastPrefix) ? item.replace(pastPrefix, "").trim() : item;
+        if (current.past && cleanItem === pastAttempt) {
+          return false; 
+        }
+        return !current.translations.includes(cleanItem);
+      });
+
+      let ledHTML = '';
+
+      expectedItems.forEach(item => {
+        let isMatch = false;
+        if (item.startsWith(pastPrefix)) {
+          isMatch = (pastAttempt === current.past);
+        } else {
+          isMatch = translationAttempts.includes(item);
+        }
+
+        let labelContent = item;
+        if (!isMatch) {
+          if (item.startsWith(pastPrefix)) {
+            const highlightedPast = highlightPartial(current.past, pastAttempt);
+            labelContent = `su pasado es ${highlightedPast}`;
+          } else {
+            const bestUserItem = findBestPartialMatch(item, translationAttempts);
+            labelContent = highlightPartial(item, bestUserItem);
+          }
+        }
+
+        ledHTML += `<span class="led-pill ${isMatch ? 'correct' : 'missing'}">${labelContent}</span>`;
+      });
+
+      incorrectItems.forEach(item => {
+        ledHTML += `<span class="led-pill incorrect">${item}</span>`;
+      });
+
+      const missingEl = document.getElementById('missingList');
+      const missingItems = document.getElementById('missingItems');
+      
+      missingEl.style.display = '';
+      missingItems.innerHTML = `<div class="missing-items-container">${ledHTML}</div>`;
     }
-  });
+  } 
+  else if (currentMode === 'img-en') {
+    let wordAttempt = "";
 
-  // --- comprobar traducciones ---
-  const required = [...current.translations];
-  const missing  = required.filter(r => !translationAttempts.includes(r));
-  const transOk  = missing.length === 0;
+    // Clasificar la entrada entre palabra base y su pasado
+    userItems.forEach(item => {
+      if (item.startsWith(pastPrefix)) {
+        pastAttempt = item.replace(pastPrefix, "").trim();
+      } else if (current.past) {
+        const scorePast = getPrefixScore(current.past, item);
+        const scoreWord = getPrefixScore(removeAccents(current.word.toLowerCase().trim()), item);
 
-  // --- comprobar pasado ---
-  const pastOk = current.past ? (pastAttempt === current.past) : true;
-  const allCorrect = transOk && pastOk;
+        if (item === current.past) {
+          pastAttempt = item;
+        } else if (scorePast > scoreWord && scorePast > 0) {
+          pastAttempt = item;
+        } else {
+          wordAttempt = item;
+        }
+      } else {
+        wordAttempt = item;
+      }
+    });
 
+    const correctWord = removeAccents(current.word.toLowerCase().trim());
+    wordOk = (wordAttempt === correctWord);
+    const pastOk = current.past ? (pastAttempt === current.past) : true;
+    allCorrect = wordOk && pastOk;
+
+    if (!allCorrect) {
+      const expectedItems = [current.word];
+      if (current.past) {
+        expectedItems.push(`su pasado es ${current.past}`);
+      }
+
+      let ledHTML = '';
+
+      expectedItems.forEach(item => {
+        let isMatch = false;
+        if (item.startsWith(pastPrefix)) {
+          isMatch = (pastAttempt === current.past);
+        } else {
+          isMatch = wordOk;
+        }
+
+        let labelContent = item;
+        if (!isMatch) {
+          if (item.startsWith(pastPrefix)) {
+            const highlightedPast = highlightPartial(current.past, pastAttempt);
+            labelContent = `su pasado es ${highlightedPast}`;
+          } else {
+            labelContent = highlightPartial(current.word, wordAttempt);
+          }
+        }
+
+        ledHTML += `<span class="led-pill ${isMatch ? 'correct' : 'missing'}">${labelContent}</span>`;
+      });
+
+      // Mostrar como incorrectos los elementos sobrantes o erróneos
+      userItems.forEach(item => {
+        const cleanItem = item.startsWith(pastPrefix) ? item.replace(pastPrefix, "").trim() : item;
+        if (cleanItem !== correctWord && (!current.past || cleanItem !== pastAttempt)) {
+          ledHTML += `<span class="led-pill incorrect">${item}</span>`;
+        }
+      });
+
+      const missingEl = document.getElementById('missingList');
+      const missingItems = document.getElementById('missingItems');
+      
+      missingEl.style.display = '';
+      missingItems.innerHTML = `<div class="missing-items-container">${ledHTML}</div>`;
+    }
+  }
+  else if (currentMode === 'sentence') {
+    // El usuario debe adivinar la palabra de relleno específica de la oración
+    allCorrect = (userInputSingle === currentSentence.fill);
+
+    if (!allCorrect) {
+      const missingEl = document.getElementById('missingList');
+      const missingItems = document.getElementById('missingItems');
+      missingEl.style.display = '';
+      missingItems.innerHTML = `
+        <div class="missing-items-container">
+          <span class="led-pill missing">Esperado: ${currentSentence.fill}</span>
+          <span class="led-pill incorrect">Escribiste: ${rawTrans || 'nada'}</span>
+        </div>`;
+    }
+  }
+
+  // ── 2. PROCESAR ESTADÍSTICAS Y SISTEMA DE PESOS (ALGORITMO) ──
   if (allCorrect) {
     streak++;
     if (current) {
-      current.weight = 1; // Restablecer peso al acertar
-      syncWeightsWithStorage(); // Guardar cambio de forma permanente
+      current.weight = 1; // Restablecer peso al responder correctamente
+      syncWeightsWithStorage();
 
-      // Si el modo ciclo está activo, registrar la palabra como completada
+      // Registro en Modo Ciclo si está activo
       const cycleToggle = document.getElementById('cycleModeToggle');
       const customToggle = document.getElementById('customModeToggle');
       const isCustomActive = customToggle ? customToggle.checked : false;
@@ -1138,40 +1372,34 @@ function checkAnswer() {
     }
   } else {
     streak = 0;
-    
-    // OMITIR DE RECENTLY SEEN: Si la palabra se falla, la eliminamos inmediatamente 
-    // del búfer de recientes para que su peso elevado tenga efecto en la próxima selección.
+    // Retirar del búfer dinámico de recientes para que reaparezca pronto
     recentlySeen = recentlySeen.filter(w => w !== current.word);
 
     if (current) {
-      // Usamos el número de palabras actualmente elegibles (no el total del
-      // diccionario) como referencia, para que el peso produzca la
-      // probabilidad deseada dentro del conjunto que realmente compite.
       const referenceWordsCount = getReferenceWordCount();
       const referenceOthers = Math.max(referenceWordsCount - 1, 1);
 
-      // 1. Si es el primer fallo, calculamos un peso inicial elevado
       if (!current.weight || current.weight <= 1) {
         const targetProbability = 0.20;
         current.weight = Math.ceil((targetProbability * referenceOthers) / (1 - targetProbability));
       } else {
-        // 2. Si es un fallo consecutivo, incrementamos el peso de forma lineal
         const linearIncrement = Math.ceil(referenceWordsCount * 0.15);
         current.weight = current.weight + linearIncrement;
       }
       
-      syncWeightsWithStorage(); // Guardar cambio de forma permanente
+      syncWeightsWithStorage();
     }
   }
   updateStats();
 
-  // ocultar entrada, mostrar feedback
+  // ── 3. ACTUALIZAR INTERFAZ GENERAL Y MOSTRAR RESULTADOS ──
   document.getElementById('inputSection').style.display = 'none';
   const fb = document.getElementById('feedback');
   fb.className = 'visible';
 
   updateAddCurrentToCustomBtn();
 
+  // Mostrar u ocultar la descripción del feedback
   const descEl = document.getElementById('feedbackDesc');
   if (current.description) {
     descEl.textContent = current.description;
@@ -1195,58 +1423,12 @@ function checkAnswer() {
       document.getElementById('streakNum').textContent = streak;
     }
   } else {
-    title.textContent = transOk ? 'Casi… faltó el pasado' : 'Revisa tus respuestas';
+    const isBaseOk = (currentMode === 'en-es' && transOk) || (currentMode === 'img-en' && wordOk);
+    title.textContent = isBaseOk ? 'Casi… faltó el pasado' : 'Revisa tus respuestas';
     title.className   = 'feedback-title wrong';
+    
     document.getElementById('wordCard').classList.add('shake');
     setTimeout(() => document.getElementById('wordCard').classList.remove('shake'), 450);
-
-    const expectedItems = [...current.translations];
-    if (current.past) {
-      expectedItems.push(`su pasado es ${current.past}`);
-    }
-
-    // Filtrar los elementos incorrectos excluyendo el intento del pasado
-    const incorrectItems = userItems.filter(item => {
-      const cleanItem = item.startsWith(pastPrefix) ? item.replace(pastPrefix, "").trim() : item;
-      if (current.past && cleanItem === pastAttempt) {
-        return false; 
-      }
-      return !current.translations.includes(cleanItem);
-    });
-
-    let ledHTML = '';
-
-    expectedItems.forEach(item => {
-      let isMatch = false;
-      if (item.startsWith(pastPrefix)) {
-        isMatch = (pastAttempt === current.past);
-      } else {
-        isMatch = translationAttempts.includes(item);
-      }
-
-      let labelContent = item;
-      if (!isMatch) {
-        if (item.startsWith(pastPrefix)) {
-          const highlightedPast = highlightPartial(current.past, pastAttempt);
-          labelContent = `su pasado es ${highlightedPast}`;
-        } else {
-          const bestUserItem = findBestPartialMatch(item, translationAttempts);
-          labelContent = highlightPartial(item, bestUserItem);
-        }
-      }
-
-      ledHTML += `<span class="led-pill ${isMatch ? 'correct' : 'missing'}">${labelContent}</span>`;
-    });
-
-    incorrectItems.forEach(item => {
-      ledHTML += `<span class="led-pill incorrect">${item}</span>`;
-    });
-
-    const missingEl = document.getElementById('missingList');
-    const missingItems = document.getElementById('missingItems');
-    
-    missingEl.style.display = '';
-    missingItems.innerHTML = `<div class="missing-items-container">${ledHTML}</div>`;
   }
 }
 
@@ -1467,6 +1649,17 @@ function clearCustomList() {
     const customCountTab = document.getElementById('customCountTab');
     if (customCountTab) customCountTab.textContent = customWords.length;
     renderPanelList();
+  }
+}
+
+function setupHintListener() {
+  const hintBtn = document.getElementById('hintBtn');
+  const hintContent = document.getElementById('hintContent');
+  if (hintBtn && hintContent) {
+    hintBtn.addEventListener('click', () => {
+      hintContent.style.display = hintContent.style.display === 'none' ? 'block' : 'none';
+      hintBtn.textContent = hintContent.style.display === 'none' ? 'Ver pista 👁️' : 'Ocultar pista 🙈';
+    });
   }
 }
 
