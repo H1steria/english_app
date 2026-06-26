@@ -1,0 +1,1 @@
+py update_custom_list.py temp.json words.json

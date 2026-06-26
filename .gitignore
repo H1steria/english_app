@@ -1,0 +1,15 @@
+*
+
+!index.html
+!words.json
+!README.md
+!.gitignore
+
+!utils
+!utils/add images to json.py
+!utils/compilar app.txt
+!utils/english.drawio
+!utils/execute.txt
+!utils/find_diplicated_words.py
+!utils/tiempos.txt
+!utils/update_custom_list.py

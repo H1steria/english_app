@@ -1,0 +1,342 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.0.3 Chrome/140.0.7339.249 Electron/38.7.0 Safari/537.36" version="29.0.3">
+  <diagram name="Page-1" id="WSFqxAH9-70gObGbRNEn">
+    <mxGraphModel dx="4314" dy="3248" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="gALtpMwaq8tKK2a95EE4-45" value="" style="group;fontSize=17;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="-170" y="850" width="1500" height="782" as="geometry" />
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-22" value="¿Qué tiempo del Presente es?" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" vertex="1">
+          <mxGeometry x="636" width="260" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-23" value="¿Presente Simple?" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" vertex="1">
+          <mxGeometry x="350" y="136" width="180" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-24" value="¿Presente Continuo?" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" vertex="1">
+          <mxGeometry x="709" y="128" width="195" height="195" as="geometry" />
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-25" value="¿Presente Perfecto?" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" vertex="1">
+          <mxGeometry x="1119" y="129" width="193" height="193" as="geometry" />
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-26" value="¿Qué tipo de oración?" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" vertex="1">
+          <mxGeometry x="336" y="397" width="209" height="209" as="geometry" />
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-27" value="Sujeto + Verbo&#xa;* Añadir -s/-es si es 3ª persona: He/She/It" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" vertex="1">
+          <mxGeometry y="680" width="260" height="102" as="geometry" />
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-28" value="Sujeto + do not / does not + Verbo base" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" vertex="1">
+          <mxGeometry x="310" y="692" width="260" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-29" value="Do / Does + Sujeto + Verbo base?&#xa;* O iniciar con Wh- Word + do/does" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" vertex="1">
+          <mxGeometry x="620" y="680" width="260" height="102" as="geometry" />
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-30" value="Sujeto + am/is/are + Verbo con -ing&#xa;* &#39;is&#39; para He/She/It&#xa;* &#39;am&#39; para I&#xa;* &#39;are&#39; para You/We/They" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" vertex="1">
+          <mxGeometry x="677" y="439" width="260" height="126" as="geometry" />
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-31" value="¿Es continuo?" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" vertex="1">
+          <mxGeometry x="1142" y="428" width="147" height="147" as="geometry" />
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-32" value="Sujeto + have/has + Verbo en Participio&#xa;* &#39;has&#39; para He/She/It" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" vertex="1">
+          <mxGeometry x="930" y="680" width="260" height="102" as="geometry" />
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-33" value="Sujeto + have/has been + Verbo con -ing" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" vertex="1">
+          <mxGeometry x="1240" y="692" width="260" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-34" value="" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.83;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" source="gALtpMwaq8tKK2a95EE4-22" target="gALtpMwaq8tKK2a95EE4-23" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="440" y="103" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-35" value="" style="curved=1;startArrow=none;endArrow=block;exitX=0.59;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" source="gALtpMwaq8tKK2a95EE4-22" target="gALtpMwaq8tKK2a95EE4-24" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="807" y="103" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-36" value="" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.74;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" source="gALtpMwaq8tKK2a95EE4-22" target="gALtpMwaq8tKK2a95EE4-25" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1215" y="103" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-37" value="Sí" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" source="gALtpMwaq8tKK2a95EE4-23" target="gALtpMwaq8tKK2a95EE4-26" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-38" value="Afirmativa" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.73;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" source="gALtpMwaq8tKK2a95EE4-26" target="gALtpMwaq8tKK2a95EE4-27" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="130" y="643" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-39" value="Negativa" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" source="gALtpMwaq8tKK2a95EE4-26" target="gALtpMwaq8tKK2a95EE4-28" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-40" value="Interrogativa" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.73;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" source="gALtpMwaq8tKK2a95EE4-26" target="gALtpMwaq8tKK2a95EE4-29" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="750" y="643" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-41" value="Sí" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" source="gALtpMwaq8tKK2a95EE4-24" target="gALtpMwaq8tKK2a95EE4-30" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-42" value="" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" source="gALtpMwaq8tKK2a95EE4-25" target="gALtpMwaq8tKK2a95EE4-31" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-43" value="No: Presente Perfecto" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.96;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" source="gALtpMwaq8tKK2a95EE4-31" target="gALtpMwaq8tKK2a95EE4-32" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1060" y="643" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gALtpMwaq8tKK2a95EE4-44" value="Sí: Pres. Perf. Continuo" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.96;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="gALtpMwaq8tKK2a95EE4-45" source="gALtpMwaq8tKK2a95EE4-31" target="gALtpMwaq8tKK2a95EE4-33" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1370" y="643" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-22" value="" style="group;fontSize=16;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="20" y="-80" width="1190" height="875" as="geometry" />
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-1" value="¿Qué tiempo del Futuro es?" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" vertex="1">
+          <mxGeometry x="455" width="253" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-2" value="¿Futuro Simple?" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" vertex="1">
+          <mxGeometry x="203" y="112" width="164" height="164" as="geometry" />
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-3" value="¿Futuro Continuo?" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" vertex="1">
+          <mxGeometry x="492" y="104" width="179" height="179" as="geometry" />
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-4" value="¿Futuro Perfecto?" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" vertex="1">
+          <mxGeometry x="817" y="105" width="177" height="177" as="geometry" />
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-5" value="¿Uso?" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" vertex="1">
+          <mxGeometry x="240" y="411" width="91" height="91" as="geometry" />
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-6" value="**Futuro Simple (Will)**&#xa;    • (+) Sujeto + will + Verbo base&#xa;    • (-) Sujeto + won&#39;t + Verbo base&#xa;    • (?) Will + Sujeto + Verbo base?" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" vertex="1">
+          <mxGeometry y="665" width="260" height="198" as="geometry" />
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-7" value="**Futuro Simple (Be Going To)**&#xa;    • (+) Sujeto + am/is/are + going to + Verbo base&#xa;    • (-) Sujeto + am/is/are + not + going to + Verbo base&#xa;    • (?) Am/Is/Are + Sujeto + going to + Verbo base?" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" vertex="1">
+          <mxGeometry x="310" y="653" width="260" height="222" as="geometry" />
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-8" value="**Futuro Continuo**&#xa;    • (+) Sujeto + will be + Verbo-ing&#xa;    • (-) Sujeto + won&#39;t be + Verbo-ing&#xa;    • (?) Will + Sujeto + be + Verbo-ing?" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" vertex="1">
+          <mxGeometry x="451" y="357" width="260" height="198" as="geometry" />
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-9" value="¿Es continuo?" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" vertex="1">
+          <mxGeometry x="832" y="383" width="147" height="147" as="geometry" />
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-10" value="**Futuro Perfecto**&#xa;    • (+) Sujeto + will have + Verbo participio&#xa;    • (-) Sujeto + won&#39;t have + Verbo participio&#xa;    • (?) Will + Sujeto + have + Verbo participio?" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" vertex="1">
+          <mxGeometry x="620" y="665" width="260" height="198" as="geometry" />
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-11" value="**Futuro Perfecto Continuo**&#xa;    • (+) Sujeto + will have been + Verbo-ing&#xa;    • (-) Sujeto + won&#39;t have been + Verbo-ing&#xa;    • (?) Will + Sujeto + have been + Verbo-ing?" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" vertex="1">
+          <mxGeometry x="930" y="665" width="260" height="198" as="geometry" />
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-12" value="" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.91;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" source="Yt4grEAH744BG9N9dlge-1" target="Yt4grEAH744BG9N9dlge-2" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="285" y="79" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-13" value="" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" source="Yt4grEAH744BG9N9dlge-1" target="Yt4grEAH744BG9N9dlge-3" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-14" value="" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.88;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" source="Yt4grEAH744BG9N9dlge-1" target="Yt4grEAH744BG9N9dlge-4" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="905" y="79" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-15" value="Sí" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.49;entryY=-0.01;rounded=0;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" source="Yt4grEAH744BG9N9dlge-2" target="Yt4grEAH744BG9N9dlge-5" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-16" value="Decisión rápida / Predicción" style="curved=1;startArrow=none;endArrow=block;exitX=-0.01;exitY=0.97;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" source="Yt4grEAH744BG9N9dlge-5" target="Yt4grEAH744BG9N9dlge-6" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="130" y="604" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-17" value="Plan seguro / Evidencia clara" style="curved=1;startArrow=none;endArrow=block;exitX=0.99;exitY=0.97;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" source="Yt4grEAH744BG9N9dlge-5" target="Yt4grEAH744BG9N9dlge-7" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="440" y="604" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-18" value="Sí" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" source="Yt4grEAH744BG9N9dlge-3" target="Yt4grEAH744BG9N9dlge-8" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-19" value="" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" source="Yt4grEAH744BG9N9dlge-4" target="Yt4grEAH744BG9N9dlge-9" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-20" value="No: Futuro Perfecto" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.97;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" source="Yt4grEAH744BG9N9dlge-9" target="Yt4grEAH744BG9N9dlge-10" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="750" y="604" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Yt4grEAH744BG9N9dlge-21" value="Sí: Fut. Perf. Continuo" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.97;entryX=0.5;entryY=0;rounded=0;fontSize=17;" parent="Yt4grEAH744BG9N9dlge-22" source="Yt4grEAH744BG9N9dlge-9" target="Yt4grEAH744BG9N9dlge-11" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1060" y="604" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-28" value="" style="group;fontSize=17;" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="-25" y="1720" width="1280" height="1066" as="geometry" />
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-1" value="¿Qué tiempo del Pasado es?" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" vertex="1" parent="iT6ZrqeKtIcnMllJ73gQ-28">
+          <mxGeometry x="282.88401253918494" width="256.80250783699057" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-2" value="¿Pasado Continuo?" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=17;" vertex="1" parent="iT6ZrqeKtIcnMllJ73gQ-28">
+          <mxGeometry x="39.122257053291534" y="104" width="182.57053291536047" height="182" as="geometry" />
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-3" value="¿Pasado Simple?" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=17;" vertex="1" parent="iT6ZrqeKtIcnMllJ73gQ-28">
+          <mxGeometry x="327.02194357366767" y="112" width="167.5235109717868" height="167" as="geometry" />
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-4" value="¿Pasado Perfecto?" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=17;" vertex="1" parent="iT6ZrqeKtIcnMllJ73gQ-28">
+          <mxGeometry x="903.8244514106582" y="105" width="180.564263322884" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-5" value="Sujeto + was/were + Verbo con -ing&#xa;* No usa &#39;did&#39;&#xa;* &#39;was&#39; para I/He/She/It&#xa;* &#39;were&#39; para You/We/They" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" vertex="1" parent="iT6ZrqeKtIcnMllJ73gQ-28">
+          <mxGeometry y="397" width="260.81504702194354" height="126" as="geometry" />
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-6" value="¿Usa el verbo To Be?" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=17;" vertex="1" parent="iT6ZrqeKtIcnMllJ73gQ-28">
+          <mxGeometry x="310.9717868338558" y="360" width="199.62382445141063" height="199" as="geometry" />
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-7" value="No usa &#39;did&#39;&#xa;* Afirmativo: was/were&#xa;* Negativo: was not / were not&#xa;* Interrogativo: Was/Were + Sujeto?" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" vertex="1" parent="iT6ZrqeKtIcnMllJ73gQ-28">
+          <mxGeometry x="137.4294670846395" y="663" width="260.81504702194354" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-8" value="¿Qué tipo de oración?" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=17;" vertex="1" parent="iT6ZrqeKtIcnMllJ73gQ-28">
+          <mxGeometry x="448.40125391849523" y="633" width="209.65517241379308" height="209" as="geometry" />
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-9" value="Sujeto + Verbo en pasado&#xa;* Regulares: terminan en -ed&#xa;* Irregulares: cambian de forma&#xa;* No usa &#39;did&#39;" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" vertex="1" parent="iT6ZrqeKtIcnMllJ73gQ-28">
+          <mxGeometry x="112.35109717868337" y="916" width="260.81504702194354" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-10" value="Sujeto + did not / didn&#39;t + Verbo en forma base" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" vertex="1" parent="iT6ZrqeKtIcnMllJ73gQ-28">
+          <mxGeometry x="423.32288401253913" y="952" width="260.81504702194354" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-11" value="Did + Sujeto + Verbo en forma base?&#xa;* O iniciar con Wh- Word + did" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" vertex="1" parent="iT6ZrqeKtIcnMllJ73gQ-28">
+          <mxGeometry x="734.2946708463949" y="940" width="260.81504702194354" height="102" as="geometry" />
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-12" value="¿Es continuo?" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=17;" vertex="1" parent="iT6ZrqeKtIcnMllJ73gQ-28">
+          <mxGeometry x="920.8777429467084" y="386" width="147.46081504702192" height="147" as="geometry" />
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-13" value="Sujeto + had + Verbo en Participio&#xa;* Acción antes de otra acción pasada" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" vertex="1" parent="iT6ZrqeKtIcnMllJ73gQ-28">
+          <mxGeometry x="708.2131661442006" y="687" width="260.81504702194354" height="102" as="geometry" />
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-14" value="Sujeto + had been + Verbo con -ing&#xa;* Enfatiza la duración en el pasado" style="whiteSpace=wrap;strokeWidth=2;fontSize=17;" vertex="1" parent="iT6ZrqeKtIcnMllJ73gQ-28">
+          <mxGeometry x="1019.1849529780563" y="687" width="260.81504702194354" height="102" as="geometry" />
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-15" value="" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.94;entryX=0.5;entryY=0;rounded=0;fontSize=17;" edge="1" parent="iT6ZrqeKtIcnMllJ73gQ-28" source="iT6ZrqeKtIcnMllJ73gQ-1" target="iT6ZrqeKtIcnMllJ73gQ-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="130.40752351097177" y="79" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-16" value="" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=17;" edge="1" parent="iT6ZrqeKtIcnMllJ73gQ-28" source="iT6ZrqeKtIcnMllJ73gQ-1" target="iT6ZrqeKtIcnMllJ73gQ-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-17" value="" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.71;entryX=0.5;entryY=0;rounded=0;fontSize=17;" edge="1" parent="iT6ZrqeKtIcnMllJ73gQ-28" source="iT6ZrqeKtIcnMllJ73gQ-1" target="iT6ZrqeKtIcnMllJ73gQ-4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="994.1065830721002" y="79" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-18" value="Sí" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=17;" edge="1" parent="iT6ZrqeKtIcnMllJ73gQ-28" source="iT6ZrqeKtIcnMllJ73gQ-2" target="iT6ZrqeKtIcnMllJ73gQ-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-19" value="Sí" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=17;" edge="1" parent="iT6ZrqeKtIcnMllJ73gQ-28" source="iT6ZrqeKtIcnMllJ73gQ-3" target="iT6ZrqeKtIcnMllJ73gQ-6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-20" value="Sí" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.98;entryX=0.5;entryY=0;rounded=0;fontSize=17;" edge="1" parent="iT6ZrqeKtIcnMllJ73gQ-28" source="iT6ZrqeKtIcnMllJ73gQ-6" target="iT6ZrqeKtIcnMllJ73gQ-7">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="267.83699059561127" y="596" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-21" value="No" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.98;entryX=0.5;entryY=0;rounded=0;fontSize=17;" edge="1" parent="iT6ZrqeKtIcnMllJ73gQ-28" source="iT6ZrqeKtIcnMllJ73gQ-6" target="iT6ZrqeKtIcnMllJ73gQ-8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="553.730407523511" y="596" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-22" value="Afirmativa" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.73;entryX=0.5;entryY=0;rounded=0;fontSize=17;" edge="1" parent="iT6ZrqeKtIcnMllJ73gQ-28" source="iT6ZrqeKtIcnMllJ73gQ-8" target="iT6ZrqeKtIcnMllJ73gQ-9">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="242.75862068965515" y="879" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-23" value="Negativa" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=17;" edge="1" parent="iT6ZrqeKtIcnMllJ73gQ-28" source="iT6ZrqeKtIcnMllJ73gQ-8" target="iT6ZrqeKtIcnMllJ73gQ-10">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-24" value="Interrogativa" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.73;entryX=0.5;entryY=0;rounded=0;fontSize=17;" edge="1" parent="iT6ZrqeKtIcnMllJ73gQ-28" source="iT6ZrqeKtIcnMllJ73gQ-8" target="iT6ZrqeKtIcnMllJ73gQ-11">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="864.7021943573667" y="879" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-25" value="" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;fontSize=17;" edge="1" parent="iT6ZrqeKtIcnMllJ73gQ-28" source="iT6ZrqeKtIcnMllJ73gQ-4" target="iT6ZrqeKtIcnMllJ73gQ-12">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-26" value="No: Pasado Perfecto" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.94;entryX=0.5;entryY=0;rounded=0;fontSize=17;" edge="1" parent="iT6ZrqeKtIcnMllJ73gQ-28" source="iT6ZrqeKtIcnMllJ73gQ-12" target="iT6ZrqeKtIcnMllJ73gQ-13">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="838.6206896551723" y="596" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iT6ZrqeKtIcnMllJ73gQ-27" value="Sí: Pas. Perf. Continuo" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.94;entryX=0.5;entryY=0;rounded=0;fontSize=17;" edge="1" parent="iT6ZrqeKtIcnMllJ73gQ-28" source="iT6ZrqeKtIcnMllJ73gQ-12" target="iT6ZrqeKtIcnMllJ73gQ-14">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1149.592476489028" y="596" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,14 @@
+Necesitas Node.js y Android Studio instalados.
+
+npm install @capacitor/core @capacitor/cli
+npm install @capacitor/android
+npm init -y
+npx cap init "Mi App" "com.ejemplo.myapp" --web-dir=nombre_carpeta_html
+npx cap add android
+npx cap copy
+npx cap open android
+
+
+actualizar app:
+npx cap copy
+compilar de nuevo.

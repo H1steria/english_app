@@ -1,0 +1,88 @@
+presente:
+
+flowchart TD
+    Presente[¿Qué tiempo del Presente es?] --> Simple{¿Presente Simple?}
+    Presente --> Continuo{¿Presente Continuo?}
+    Presente --> Perfecto{¿Presente Perfecto?}
+
+    %% Presente Simple
+    Simple -->|Sí| PS_Tipo{¿Qué tipo de oración?}
+    PS_Tipo -->|Afirmativa| PS_Af[Sujeto + Verbo\n* Añadir -s/-es si es 3ª persona: He/She/It]
+    PS_Tipo -->|Negativa| PS_Neg[Sujeto + do not / does not + Verbo base]
+    PS_Tipo -->|Interrogativa| PS_Int[Do / Does + Sujeto + Verbo base?\n* O iniciar con Wh- Word + do/does]
+
+    %% Presente Continuo
+    Continuo -->|Sí| PC_Str[Sujeto + am/is/are + Verbo con -ing\n* 'is' para He/She/It\n* 'am' para I\n* 'are' para You/We/They]
+
+    %% Presente Perfecto
+    Perfecto --> Perf_Choice{¿Es continuo?}
+    Perf_Choice -->|No: Presente Perfecto| PP_Str[Sujeto + have/has + Verbo en Participio\n* 'has' para He/She/It]
+    Perf_Choice -->|Sí: Pres. Perf. Continuo| PPC_Str[Sujeto + have/has been + Verbo con -ing]
+
+
+
+pasado:
+
+flowchart TD
+    Pasado[¿Qué tiempo del Pasado es?] --> Continuo{¿Pasado Continuo?}
+    Pasado --> Simple{¿Pasado Simple?}
+    Pasado --> Perfecto{¿Pasado Perfecto?}
+
+    %% Pasado Continuo
+    Continuo -->|Sí| PC_Str[Sujeto + was/were + Verbo con -ing\n* No usa 'did'\n* 'was' para I/He/She/It\n* 'were' para You/We/They]
+
+    %% Pasado Simple
+    Simple -->|Sí| PS_TB{¿Usa el verbo To Be?}
+    
+    %% Pasado Simple con To Be
+    PS_TB -->|Sí| TB_Rules[No usa 'did'\n* Afirmativo: was/were\n* Negativo: was not / were not\n* Interrogativo: Was/Were + Sujeto?]
+    
+    %% Pasado Simple con otros verbos
+    PS_TB -->|No| PS_Otr{¿Qué tipo de oración?}
+    PS_Otr -->|Afirmativa| PS_Af[Sujeto + Verbo en pasado\n* Regulares: terminan en -ed\n* Irregulares: cambian de forma\n* No usa 'did']
+    PS_Otr -->|Negativa| PS_Neg[Sujeto + did not / didn't + Verbo en forma base]
+    PS_Otr -->|Interrogativa| PS_Int[Did + Sujeto + Verbo en forma base?\n* O iniciar con Wh- Word + did]
+
+    %% Pasado Perfecto
+    Perfecto --> PP_Choice{¿Es continuo?}
+    PP_Choice -->|No: Pasado Perfecto| PP_Str[Sujeto + had + Verbo en Participio\n* Acción antes de otra acción pasada]
+    PP_Choice -->|Sí: Pas. Perf. Continuo| PPC_Str[Sujeto + had been + Verbo con -ing\n* Enfatiza la duración en el pasado]
+
+
+
+futuro:
+
+flowchart TD
+    Futuro[¿Qué tiempo del Futuro es?] --> Simple{¿Futuro Simple?}
+    Futuro --> Continuo{¿Futuro Continuo?}
+    Futuro --> Perfecto{¿Futuro Perfecto?}
+
+    %% Futuro Simple
+    Simple -->|Sí| FS_Choice{¿Uso?}
+    FS_Choice -->|Decisión rápida / Predicción| FS_Will["**Futuro Simple (Will)**
+    • (+) Sujeto + will + Verbo base
+    • (-) Sujeto + won't + Verbo base
+    • (?) Will + Sujeto + Verbo base?"]
+    
+    FS_Choice -->|Plan seguro / Evidencia clara| FS_Going["**Futuro Simple (Be Going To)**
+    • (+) Sujeto + am/is/are + going to + Verbo base
+    • (-) Sujeto + am/is/are + not + going to + Verbo base
+    • (?) Am/Is/Are + Sujeto + going to + Verbo base?"]
+
+    %% Futuro Continuo
+    Continuo -->|Sí| FC_Str["**Futuro Continuo**
+    • (+) Sujeto + will be + Verbo-ing
+    • (-) Sujeto + won't be + Verbo-ing
+    • (?) Will + Sujeto + be + Verbo-ing?"]
+
+    %% Futuro Perfecto
+    Perfecto --> FP_Choice{¿Es continuo?}
+    FP_Choice -->|No: Futuro Perfecto| FP_Str["**Futuro Perfecto**
+    • (+) Sujeto + will have + Verbo participio
+    • (-) Sujeto + won't have + Verbo participio
+    • (?) Will + Sujeto + have + Verbo participio?"]
+    
+    FP_Choice -->|Sí: Fut. Perf. Continuo| FPC_Str["**Futuro Perfecto Continuo**
+    • (+) Sujeto + will have been + Verbo-ing
+    • (-) Sujeto + won't have been + Verbo-ing
+    • (?) Will + Sujeto + have been + Verbo-ing?"]
