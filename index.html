@@ -384,20 +384,22 @@
       background: var(--card);
       border: 1px solid #ffffff12;
       border-radius: var(--radius);
-      width: 100%;
-      max-width: 400px;
-      max-height: 80vh;
+      width: 95vw;
+      max-width: 450px;
+      height: calc(100dvh - 32px); 
+      max-height: 800px;
       display: flex;
       flex-direction: column;
       padding: 16px;
-      gap: 12px;
+      gap: 5px;
+      margin: auto;
     }
     .panel-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid #ffffff12;
-      padding-bottom: 8px;
+      padding-bottom: 1px;
     }
     .panel-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
 
@@ -580,36 +582,116 @@
       <span style="font-size: 0.72rem;">Mi lista</span>
     </label>
 
-    <button class="btn-toggle-panel" id="openPanelBtn">⚙️ Pesos</button>
+    <button class="btn-toggle-panel" id="openPanelBtn">⚙️ Panel</button>
   </div>
 </main>
 
-<!-- Panel Modal de Pesos -->
+<!-- Panel  -->
+<!-- Panel Modal de Pesos y Configuración -->
 <div class="modal-overlay" id="weightsModal">
   <div class="panel-container">
     <div class="panel-header">
       <div>
         <div id="panelWordCount" style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">Total: 0 palabras</div>
       </div>
-      <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-end;">
-        <button class="btn-toggle-panel" id="syncMainBtn" style="background: rgba(46, 204, 113, 0.15); color: #2ecc71; border-color: rgba(46, 204, 113, 0.3);" title="Descargar la base de datos más reciente desde el servidor">Sync</button>
-        <button class="btn-toggle-panel" id="loadCustomFromJsonBtn" style="background: rgba(245, 197, 24, 0.15); color: var(--gold); border-color: rgba(245, 197, 24, 0.3);" title="Cargar lista personalizada desde el servidor">Add cstm</button>
-        <button class="btn-toggle-panel" id="exportCustomBtn" style="background: rgba(15, 155, 142, 0.15); color: var(--teal); border-color: rgba(15, 155, 142, 0.3);">Export cstm</button>
+      <div>
         <button class="btn-toggle-panel" id="closePanelBtn">Cerrar</button>
       </div>
     </div>
+    
+    <!-- Navigation Tabs -->
     <div class="panel-tabs">
       <div class="panel-tab active" id="tabAll" data-tab="all">Todas</div>
       <div class="panel-tab" id="tabCustom" data-tab="custom">Mi lista (<span id="customCountTab">0</span>)</div>
+      <div class="panel-tab" id="tabConfig" data-tab="config">⚙️ Ajustes</div>
+      <div class="panel-tab" id="tabGroups" data-tab="groups">📦 Grupos</div>
     </div>
+
+    <!-- Tab 1 & 2: Dynamic List of words -->
     <div class="panel-list" id="panelList">
       <!-- Se llena dinámicamente -->
     </div>
+
+    <!-- Tab 3: Configuration Panel Content -->
+    <div id="panelConfig" style="display: none; flex-direction: column; gap: 14px; overflow-y: auto; flex-grow: 1; padding-top: 8px;">
+      
+      <!-- Section 1: Fetch/Import (Credentials Free) -->
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid #ffffff0a; border-radius: 8px;">
+        <div style="font-weight: 700; font-size: 0.85rem; color: #2ecc71; border-bottom: 1px solid #ffffff0a; padding-bottom: 4px; margin-bottom: 4px;">Sincronizar Datos</div>
+        <p style="font-size: 0.75rem; color: var(--muted); line-height: 1.3; margin-bottom: 4px;">
+          Descarga la base de datos de palabras más reciente del servidor y actualiza tu copia local offline. No requiere credenciales.
+        </p>
+        <button class="btn" id="syncMainBtn" style="width: 100%; padding: 10px; font-size: 0.8rem; background: rgba(46, 204, 113, 0.12); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.25);">
+          📥 Sincronizar / Importar de Servidor
+        </button>
+      </div>
+
+      <!-- Section 2: Export/Backup (Requires Write Credentials) -->
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid #ffffff0a; border-radius: 8px;">
+        <div style="font-weight: 700; font-size: 0.85rem; color: var(--teal); border-bottom: 1px solid #ffffff0a; padding-bottom: 4px; margin-bottom: 4px;">Guardar Cambios en Servidor</div>
+        <p style="font-size: 0.75rem; color: var(--muted); line-height: 1.3; margin-bottom: 6px;">
+          Requiere un Token de GitHub con permisos de escritura para actualizar el archivo 'words.json'.
+        </p>
+        
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase;">GitHub Personal Access Token</span>
+          <input type="password" id="githubToken" placeholder="ghp_..." style="width:100%; padding: 8px; background: var(--surface); border: 1px solid #ffffff12; color: #fff; border-radius: 6px; font-size: 0.85rem;">
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase;">Usuario</span>
+            <input type="text" id="githubUser" placeholder="ej. H1steria" style="width: 100%; padding: 8px; background: var(--surface); border: 1px solid #ffffff12; color: #fff; border-radius: 6px; font-size: 0.85rem;">
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase;">Repositorio</span>
+            <input type="text" id="githubRepo" placeholder="ej. english_app" style="width: 100%; padding: 8px; background: var(--surface); border: 1px solid #ffffff12; color: #fff; border-radius: 6px; font-size: 0.85rem;">
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="pushToGithubBtn" style="width: 100%; padding: 10px; font-size: 0.8rem; background: var(--teal); margin-top: 6px;">
+          📤 Exportar a GitHub
+        </button>
+      </div>
+
+      <!-- Section 3: Extra Utilities -->
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid #ffffff0a; border-radius: 8px;">
+        <div style="font-weight: 700; font-size: 0.85rem; color: var(--gold); border-bottom: 1px solid #ffffff0a; padding-bottom: 4px; margin-bottom: 2px;">Otras Herramientas</div>
+        
+        <button class="btn" id="loadCustomFromJsonBtn" style="width: 100%; padding: 10px; font-size: 0.8rem; background: rgba(245, 197, 24, 0.12); color: var(--gold); border: 1px solid rgba(245, 197, 24, 0.25);" title="Cargar lista personalizada desde el servidor">
+          ➕ Cargar Lista Predefinida
+        </button>
+        
+        <button class="btn" id="exportCustomBtn" style="width: 100%; padding: 10px; font-size: 0.8rem; background: rgba(245, 197, 24, 0.12); color: var(--gold); border: 1px solid rgba(245, 197, 24, 0.25);">
+          💾 Exportar Mi Lista Local (JSON)
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab 4: Groups -->
+    <div id="panelGroups" style="display:none; flex-direction:column; gap:12px; overflow-y:auto; flex-grow:1; padding-top:8px;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span style="font-size:0.8rem; color:var(--muted);">Palabras por grupo:</span>
+        <input type="number" id="groupSizeInput" min="1" max="200" value="20"
+          style="width:60px; padding:4px 8px; background:var(--surface); border:1px solid #ffffff18; color:var(--text); border-radius:6px; font-size:0.85rem;">
+        <button class="btn-toggle-panel" id="applyGroupSizeBtn" style="padding:5px 10px;">Aplicar</button>
+      </div>
+      <button class="btn" id="toggleGroupModeBtn"
+        style="width:100%; padding:10px; font-size:0.85rem; background:rgba(15,155,142,0.12); color:var(--teal); border:1px solid rgba(15,155,142,0.3);">
+        📋 Usando: Toda la lista
+      </button>
+      <div id="groupsList" style="display:flex; flex-direction:column; gap:6px;"></div>
+    </div>
+
+    <!-- Footer Action Buttons for study lists -->
     <div class="panel-actions" id="panelActionsAll">
-      <button class="btn btn-primary" id="resetWeightsBtn" style="background: var(--wrong); width: 100%;">Restablecer todos</button>
+      <button class="btn btn-primary" id="resetWeightsBtn" style="background: var(--wrong); width: 100%;">Restablecer todos los pesos</button>
     </div>
     <div class="panel-actions" id="panelActionsCustom" style="display:none;">
       <button class="btn btn-primary" id="clearCustomBtn" style="background: var(--wrong); width: 100%;">Vaciar mi lista</button>
+    </div>
+    <div class="panel-actions" id="panelActionsGroups" style="display:none;">
+      <button class="btn-toggle-panel" id="clearGroupSelectionBtn" style="width:100%; padding:10px;">Deseleccionar todos</button>
     </div>
   </div>
 </div>
@@ -626,6 +708,9 @@ const RECENT_LIMIT = 20; // Número máximo de palabras a recordar
 let currentMode = 'en-es'; // Modos posibles: 'en-es', 'img-en', 'sentence'
 let currentSentence = null; // Guardará la oración seleccionada en el modo 'sentence'
 const PAST_PREFIX = "su pasado es";
+let groupSize = parseInt(localStorage.getItem('group_size') || '20', 10);
+let selectedGroups = JSON.parse(localStorage.getItem('selected_groups') || '[]');
+let useGroupMode = localStorage.getItem('use_group_mode') === 'true';
 let revealCount = 0;
 const WORDS_URL = 'https://raw.githubusercontent.com/H1steria/english_app/refs/heads/master/words.json';
 const MAIN_WORDS_STORAGE_KEY = 'cached_words';
@@ -709,7 +794,7 @@ async function loadWords() {
 function processLoadedData(data) {
   const savedWeights = loadSavedWeights();
 
-  words = data.map(w => {
+  words = data.map((w, index) => {
     const normalizedWord = w.word.trim();
     const savedWeight = savedWeights[normalizedWord];
     const weight = (savedWeight !== undefined) ? savedWeight : 1;
@@ -729,7 +814,8 @@ function processLoadedData(data) {
       sentences: processedSentences,
       image: w.image || null,
       weight: weight,
-      custom_list: w.custom_list || false
+      custom_list: w.custom_list || false,
+      originalIndex: index // Store the original sequence index
     };
   });
 
@@ -741,6 +827,15 @@ function processLoadedData(data) {
     customWords = cleanedCustom;
     saveCustomWords();
   }
+}
+
+function resetAllWordProgress() {
+  localStorage.removeItem(WEIGHTS_STORAGE_KEY);
+  completedWords = [];
+  saveCompletedWords();
+  recentlySeen = [];
+  streak = 0;
+  updateStats();
 }
 
 async function handleSyncWords() {
@@ -755,13 +850,16 @@ async function handleSyncWords() {
     
     const data = await response.json();
     localStorage.setItem(MAIN_WORDS_STORAGE_KEY, JSON.stringify(data));
-    processLoadedData(data);
     
-    alert('Sincronización completada con éxito.');
+    resetAllWordProgress();
+    processLoadedData(data);
+    alert('Sincronización y reinicio completados con éxito.');
     
     const countEl = document.getElementById('panelWordCount');
     if (countEl) countEl.textContent = `Total: ${words.length} palabras`;
     renderPanelList();
+
+    nextWord();
   } catch (error) {
     alert('No se pudo realizar la sincronización: ' + error.message);
   } finally {
@@ -789,6 +887,7 @@ function handleLoadCustomFromJSON() {
 
   alert(`Se han cargado ${predefs.length} palabras predefinidas a tu lista.`);
   renderPanelList();
+  renderGroupsTab();
 
   const customToggle = document.getElementById('customModeToggle');
   if (customToggle && customToggle.checked && customWords.length === 0) {
@@ -849,7 +948,9 @@ function updateHintText() {
   let showRevealBtn = false;
 
   if (currentMode === 'en-es') {
-    hintText = current.rawTranslations.map(t => getMaskedWord(t, revealCount)).join(' ;\u00A0\u00A0\u00A0');
+    const maskedTrans = current.rawTranslations.map(t => getMaskedWord(t, revealCount)).join(' ;\u00A0\u00A0\u00A0');
+    const maskedPast = current.past ? `\nPasado: ${getMaskedWord(current.rawPast || current.past, revealCount)}` : "";
+    hintText = `${maskedTrans}${maskedPast}`;
     showRevealBtn = true;
   } else if (currentMode === 'es-en') {
     const hasPast = !!current.past;
@@ -859,11 +960,12 @@ function updateHintText() {
       : `Palabra: ${maskedWord}`;
     showRevealBtn = true;
   } else if (currentMode === 'img-en') {
-    const maskedWord = getMaskedWord(current.word, revealCount);
-    hintText = current.description
-      ? `${current.description}\n\nPista: ${maskedWord}`
-      : `Pista: ${maskedWord}`;
-    showRevealBtn = true;
+      const maskedWord = getMaskedWord(current.word, revealCount);
+      const maskedTrans = current.rawTranslations.map(t => getMaskedWord(t, revealCount)).join(', ');
+      const maskedPast = current.past ? `\nPasado: ${getMaskedWord(current.rawPast || current.past, revealCount)}` : "";
+      
+      hintText = `Inglés: ${maskedWord}${maskedPast}\nEspañol: ${maskedTrans}`;
+      showRevealBtn = true;
   }
 
   const hintTextEl = document.getElementById('hintText');
@@ -878,12 +980,124 @@ function updateHintText() {
   }
 }
 
+// ── Grupos ──────────────────────────────────────────────────────
+function calculateGroups() {
+  const sorted = getSortedCustomWords();
+  const groups = [];
+  for (let i = 0; i < sorted.length; i += groupSize) {
+    groups.push({
+      id: Math.floor(i / groupSize) + 1,
+      words: sorted.slice(i, i + groupSize)
+    });
+  }
+  return groups;
+}
+
+// ── Ordena customWords según su posición original en el JSON del servidor ──
+function getSortedCustomWords() {
+  const indexMap = {};
+  words.forEach(w => {
+    indexMap[w.word] = w.originalIndex;
+  });
+  return [...customWords].sort((a, b) => {
+    const ia = indexMap[a] !== undefined ? indexMap[a] : Infinity;
+    const ib = indexMap[b] !== undefined ? indexMap[b] : Infinity;
+    return ia - ib;
+  });
+}
+
+function getWordGroup(word) {
+  const sorted = getSortedCustomWords();
+  const idx = sorted.indexOf(word);
+  if (idx === -1) return null;
+  return Math.floor(idx / groupSize) + 1;
+}
+
+function renderGroupsTab() {
+  const groupSizeInput = document.getElementById('groupSizeInput');
+  if (groupSizeInput) groupSizeInput.value = groupSize;
+
+  const toggleBtn = document.getElementById('toggleGroupModeBtn');
+  if (toggleBtn) {
+    if (useGroupMode && selectedGroups.length > 0) {
+      toggleBtn.textContent = `📦 Usando: Grupos ${selectedGroups.join(', ')}`;
+      toggleBtn.style.background = 'rgba(233,69,96,0.15)';
+      toggleBtn.style.color = 'var(--accent)';
+      toggleBtn.style.borderColor = 'rgba(233,69,96,0.3)';
+    } else {
+      toggleBtn.textContent = '📋 Usando: Toda la lista';
+      toggleBtn.style.background = 'rgba(15,155,142,0.12)';
+      toggleBtn.style.color = 'var(--teal)';
+      toggleBtn.style.borderColor = 'rgba(15,155,142,0.3)';
+    }
+  }
+
+  const groupsList = document.getElementById('groupsList');
+  if (!groupsList) return;
+  groupsList.innerHTML = '';
+
+  const groups = calculateGroups();
+  if (groups.length === 0) {
+    groupsList.innerHTML = '<div class="panel-empty">Tu lista personalizada está vacía.</div>';
+    return;
+  }
+
+  groups.forEach(group => {
+    const isSelected = selectedGroups.includes(group.id);
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = `background:rgba(255,255,255,0.03); border:1.5px solid ${isSelected ? 'var(--teal)' : '#ffffff12'}; border-radius:8px; overflow:hidden;`;
+
+    const header = document.createElement('div');
+    header.style.cssText = 'display:flex; align-items:center; gap:8px; padding:8px 10px; cursor:pointer;';
+    header.innerHTML = `
+      <input type="checkbox" data-group="${group.id}" ${isSelected ? 'checked' : ''}
+        style="accent-color:var(--teal); width:16px; height:16px; cursor:pointer;">
+      <span style="font-weight:700; font-size:0.88rem; flex:1;">Grupo ${group.id}</span>
+      <span style="font-size:0.75rem; color:var(--muted);">${group.words.length} palabras</span>
+      <span class="group-arrow" style="color:var(--muted); font-size:0.75rem; transition:transform 0.2s;">▼</span>
+    `;
+
+    const body = document.createElement('div');
+    body.style.cssText = 'display:none; padding:6px 10px 10px; border-top:1px solid #ffffff0a;';
+    body.innerHTML = group.words.map(w => `<div style="font-size:0.82rem; padding:2px 0; color:var(--muted);">• ${w}</div>`).join('');
+
+    header.addEventListener('click', e => {
+      if (e.target.type === 'checkbox') return;
+      const open = body.style.display !== 'none';
+      body.style.display = open ? 'none' : 'block';
+      header.querySelector('.group-arrow').style.transform = open ? '' : 'rotate(180deg)';
+    });
+
+    header.querySelector('input[type="checkbox"]').addEventListener('change', e => {
+      const gid = parseInt(e.target.getAttribute('data-group'));
+      if (e.target.checked) {
+        if (!selectedGroups.includes(gid)) selectedGroups.push(gid);
+      } else {
+        selectedGroups = selectedGroups.filter(g => g !== gid);
+      }
+      localStorage.setItem('selected_groups', JSON.stringify(selectedGroups));
+      renderGroupsTab();
+    });
+
+    wrapper.appendChild(header);
+    wrapper.appendChild(body);
+    groupsList.appendChild(wrapper);
+  });
+}
+
 // ── Obtener el conjunto base de palabras según el modo activo ──
 function getBaseWordSet() {
   const customToggle = document.getElementById('customModeToggle');
   const isCustomActive = customToggle ? customToggle.checked : false;
 
   if (isCustomActive) {
+    if (useGroupMode && selectedGroups.length > 0) {
+      const groups = calculateGroups();
+      const activeWords = new Set(
+        groups.filter(g => selectedGroups.includes(g.id)).flatMap(g => g.words)
+      );
+      return words.filter(w => activeWords.has(w.word));
+    }
     return words.filter(w => customWords.includes(w.word));
   }
   return words;
@@ -1135,8 +1349,12 @@ function configureHint({ label, image = null, text = null }) {
 function renderEnEsMode(word) {
   document.getElementById('wordLabel').textContent = '¿Cómo se traduce?';
   document.getElementById('wordDisplay').textContent = word.word;
-  document.getElementById('inputLabel').textContent = 'Traducciones al español (separadas por coma)';
-  document.getElementById('translationInput').placeholder = '…';
+  
+  const hasPast = !!word.past;
+  
+  document.getElementById('inputLabel').textContent = hasPast
+    ? 'Traducciones al español y su pasado (separados por coma)'
+    : 'Traducciones al español (separadas por coma)';
 
   configureHint({
     label: 'Ver pista 👁️',
@@ -1171,7 +1389,7 @@ function renderImgEnMode(word) {
   wordImage.style.display = 'block';
 
   document.getElementById('inputLabel').textContent = 'Palabra en inglés';
-  document.getElementById('translationInput').placeholder = 'Escribe la palabra en inglés…';
+  document.getElementById('translationInput').placeholder = 'Escribe la palabra en inglés y sus traducciones al español';
 
   configureHint({ label: 'Ver pista 👁️', text: "" });
   updateHintText();
@@ -1435,9 +1653,68 @@ function checkAnswer() {
 
 // ── Evaluadores por modo ──
 function evaluateEnEs(word, userItems) {
-  const missing = word.translations.filter(t => !userItems.includes(t));
+  let pastAttempt = '';
+  let translationAttempts = [];
+
+  // 1. Check for explicit prefix first
+  const explicitPastIdx = userItems.findIndex(item => item.startsWith(PAST_PREFIX));
+  
+  if (explicitPastIdx !== -1) {
+    pastAttempt = userItems[explicitPastIdx].replace(PAST_PREFIX, '').trim();
+    translationAttempts = userItems.filter((_, idx) => idx !== explicitPastIdx);
+  } else if (word.past) {
+    // 2. Implicit check: find the item most likely meant as the past tense
+    let bestPastScore = -1;
+    let bestPastIdx = -1;
+
+    userItems.forEach((item, idx) => {
+      // Calculate how close this item is to the expected English past tense
+      const scorePast = getPrefixScore(word.past, item) + (item === word.past ? 1000 : 0);
+      
+      // Calculate how close this item is to any of the correct Spanish translations
+      let bestTransScore = 0;
+      word.translations.forEach(trans => {
+        const scoreTrans = getPrefixScore(trans, item) + (item === trans ? 1000 : 0);
+        if (scoreTrans > bestTransScore) bestTransScore = scoreTrans;
+      });
+
+      // If the item is a stronger match for the past tense than any Spanish translation
+      if (scorePast > bestTransScore && scorePast > bestPastScore) {
+        bestPastScore = scorePast;
+        bestPastIdx = idx;
+      }
+    });
+
+    if (bestPastIdx !== -1) {
+      pastAttempt = userItems[bestPastIdx];
+      translationAttempts = userItems.filter((_, idx) => idx !== bestPastIdx);
+    } else {
+      // Fallback: check for a perfect match to the past word
+      const perfectPastIdx = userItems.findIndex(item => item === word.past);
+      if (perfectPastIdx !== -1) {
+        pastAttempt = userItems[perfectPastIdx];
+        translationAttempts = userItems.filter((_, idx) => idx !== perfectPastIdx);
+      } else {
+        translationAttempts = [...userItems];
+      }
+    }
+  } else {
+    translationAttempts = [...userItems];
+  }
+
+  // 3. Evaluate results
+  const missing = word.translations.filter(t => !translationAttempts.includes(t));
   const transOk = missing.length === 0;
-  return { allCorrect: transOk, transOk, pastOk: true, pastAttempt: '', translationAttempts: userItems };
+  const pastOk = word.past ? (pastAttempt === word.past) : true;
+  const allCorrect = transOk && pastOk;
+
+  return { 
+    allCorrect, 
+    transOk, 
+    pastOk, 
+    pastAttempt, 
+    translationAttempts 
+  };
 }
 
 function evaluateEsEn(word, userItems) {
@@ -1450,10 +1727,17 @@ function evaluateEsEn(word, userItems) {
 
 function evaluateImgEn(word, userItems) {
   const correctWord = removeAccents(word.word.toLowerCase().trim());
-  const { wordAttempt, pastAttempt } = resolveWordAndPast(correctWord, word.past, userItems);
-  const wordOk = wordAttempt === correctWord;
-  const pastOk = word.past ? (pastAttempt === word.past) : true;
-  return { allCorrect: wordOk && pastOk, wordOk, pastOk, wordAttempt, pastAttempt };
+  const expectedItems = [correctWord, ...word.translations];
+  if (word.past) expectedItems.push(removeAccents(word.past.toLowerCase().trim()));
+
+  // Verificamos si cada item esperado está presente en el input del usuario
+  const allCorrect = expectedItems.every(item => userItems.includes(item));
+  
+  return { 
+    allCorrect,
+    expectedItems, // Pasamos esto al renderizador
+    userItems      // Pasamos los items tal cual los escribió el usuario
+  };
 }
 
 function evaluateSentence(sentence, userInputSingle) {
@@ -1472,6 +1756,7 @@ function renderEnEsLeds(word, userItems, { pastAttempt, translationAttempts }) {
   const expectedItems = [...word.translations];
   if (word.past) expectedItems.push(`${PAST_PREFIX} ${word.past}`);
 
+  // 1. Render green (correct) or orange (missing/partial) pills
   const matchedHTML = expectedItems.map(item => {
     const isMatch = item.startsWith(PAST_PREFIX)
       ? pastAttempt === word.past
@@ -1486,11 +1771,19 @@ function renderEnEsLeds(word, userItems, { pastAttempt, translationAttempts }) {
     return `<span class="led-pill ${isMatch ? 'correct' : 'missing'}">${label}</span>`;
   }).join('');
 
+  // 2. Render red (incorrect) pills for anything that is wrong
   const incorrectHTML = userItems
     .filter(item => {
       const cleanItem = item.startsWith(PAST_PREFIX) ? item.replace(PAST_PREFIX, "").trim() : item;
-      if (word.past && cleanItem === pastAttempt) return false;
-      return !word.translations.includes(cleanItem);
+      
+      // If it is one of the correct Spanish translations, do not mark as incorrect
+      if (word.translations.includes(cleanItem)) return false;
+      
+      // If it matches the correct English past tense perfectly, do not mark as incorrect
+      if (word.past && cleanItem === word.past) return false;
+      
+      // Otherwise, it is an incorrect entry (render as red LED)
+      return true;
     })
     .map(item => `<span class="led-pill incorrect">${item}</span>`)
     .join('');
@@ -1498,27 +1791,16 @@ function renderEnEsLeds(word, userItems, { pastAttempt, translationAttempts }) {
   renderLedPills(matchedHTML + incorrectHTML);
 }
 
-function renderImgEnLeds(word, userItems, { pastAttempt, wordAttempt, wordOk }) {
-  const correctWord = removeAccents(word.word.toLowerCase().trim());
-  const expectedItems = [word.word];
-  if (word.past) expectedItems.push(`${PAST_PREFIX} ${word.past}`);
-
+function renderImgEnLeds(word, userItems, { allCorrect, expectedItems }) {
+  // Items que faltaron por escribir
   const matchedHTML = expectedItems.map(item => {
-    const isMatch = item.startsWith(PAST_PREFIX) ? (pastAttempt === word.past) : wordOk;
-    let label = item;
-    if (!isMatch) {
-      label = item.startsWith(PAST_PREFIX)
-        ? `${PAST_PREFIX} ${highlightPartial(word.past, pastAttempt)}`
-        : highlightPartial(word.word, wordAttempt);
-    }
-    return `<span class="led-pill ${isMatch ? 'correct' : 'missing'}">${label}</span>`;
+    const isMatch = userItems.includes(item);
+    return `<span class="led-pill ${isMatch ? 'correct' : 'missing'}">${item}</span>`;
   }).join('');
 
+  // Items que el usuario escribió pero que no existen en los esperados
   const incorrectHTML = userItems
-    .filter(item => {
-      const cleanItem = item.startsWith(PAST_PREFIX) ? item.replace(PAST_PREFIX, "").trim() : item;
-      return cleanItem !== correctWord && (!word.past || cleanItem !== pastAttempt);
-    })
+    .filter(item => !expectedItems.includes(item))
     .map(item => `<span class="led-pill incorrect">${item}</span>`)
     .join('');
 
@@ -1752,17 +2034,17 @@ function openWeightsPanel() {
   modal.classList.add('active');
 }
 
-function switchPanelTab(tab) {
-  panelTab = tab;
+// function switchPanelTab(tab) {
+//   panelTab = tab;
 
-  document.getElementById('tabAll').classList.toggle('active', tab === 'all');
-  document.getElementById('tabCustom').classList.toggle('active', tab === 'custom');
+//   document.getElementById('tabAll').classList.toggle('active', tab === 'all');
+//   document.getElementById('tabCustom').classList.toggle('active', tab === 'custom');
 
-  document.getElementById('panelActionsAll').style.display = (tab === 'all') ? '' : 'none';
-  document.getElementById('panelActionsCustom').style.display = (tab === 'custom') ? '' : 'none';
+//   document.getElementById('panelActionsAll').style.display = (tab === 'all') ? '' : 'none';
+//   document.getElementById('panelActionsCustom').style.display = (tab === 'custom') ? '' : 'none';
 
-  renderPanelList();
-}
+//   renderPanelList();
+// }
 
 function renderPanelList() {
   const listContainer = document.getElementById('panelList');
@@ -1835,6 +2117,7 @@ function renderPanelList() {
       const customCountTab = document.getElementById('customCountTab');
       if (customCountTab) customCountTab.textContent = customWords.length;
       renderPanelList();
+      renderGroupsTab();
 
       // Si la lista personalizada queda vacía y el modo está activo, desactivarlo
       const customToggle = document.getElementById('customModeToggle');
@@ -1879,6 +2162,7 @@ function clearCustomList() {
     const customCountTab = document.getElementById('customCountTab');
     if (customCountTab) customCountTab.textContent = customWords.length;
     renderPanelList();
+    renderGroupsTab();
   }
 }
 
@@ -1908,6 +2192,170 @@ function exportCustomListJSON() {
   URL.revokeObjectURL(url);
 }
 
+async function pushToGitHub() {
+  const token = document.getElementById('githubToken').value.trim();
+  const owner = document.getElementById('githubUser').value.trim();
+  const repo  = document.getElementById('githubRepo').value.trim();
+  const path  = 'words.json';
+
+  if (!token || !owner || !repo) {
+    alert('Debe rellenar el Token, Usuario y Repositorio para subir cambios.');
+    return;
+  }
+
+  const syncCustomList = confirm(
+    '¿Deseas sincronizar tu lista personalizada local con el servidor?\n\n' +
+    'Pulsa "Aceptar" para enviar tu lista local.\n' +
+    'Pulsa "Cancelar" para conservar los valores custom_list y group del servidor sin cambios.'
+  );
+
+  const btn = document.getElementById('pushToGithubBtn');
+  const originalText = btn.textContent;
+  btn.textContent = 'Subiendo... ⏳';
+  btn.disabled = true;
+
+  try {
+    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/vnd.github.v3+json'
+    };
+
+    const getResponse = await fetch(url, { headers });
+    if (!getResponse.ok) throw new Error(`No se pudo verificar la versión en el servidor. Código: ${getResponse.status}`);
+    const fileData = await getResponse.json();
+    const currentSha = fileData.sha;
+
+    // Decode current server words to serve as the structural template (preserving original order)
+    const rawBytes = Uint8Array.from(atob(fileData.content.replace(/\n/g, '')), c => c.charCodeAt(0));
+    const serverWords = JSON.parse(new TextDecoder().decode(rawBytes));
+
+    // Map local words by key for easy lookup of modified values
+    const localWordMap = {};
+    words.forEach(w => {
+      localWordMap[w.word] = w;
+    });
+
+    const serverWordSet = new Set(serverWords.map(sw => sw.word));
+
+    // Map existing server words first to maintain their exact original positions
+    const sortedExportData = serverWords.map(sw => {
+      const w = localWordMap[sw.word] || sw;
+
+      const cleanItem = {
+        word: sw.word,
+        translations: w.rawTranslations || w.translations,
+        description: w.description || "",
+        past: w.rawPast || w.past || null,
+      };
+
+      if (w.image) cleanItem.image = w.image;
+
+      if (syncCustomList) {
+        if (customWords.includes(sw.word)) {
+          cleanItem.custom_list = true;
+          cleanItem.group = getWordGroup(sw.word);
+        }
+      } else {
+        if (sw.custom_list) cleanItem.custom_list = sw.custom_list;
+        if (sw.group !== undefined) cleanItem.group = sw.group;
+      }
+
+      if (w.sentences && w.sentences.length > 0) {
+        cleanItem.sentences = w.sentences.map(s => ({
+          sentence: s.sentence,
+          fill: s.fill
+        }));
+      }
+
+      return cleanItem;
+    });
+
+    // Append any entirely new local words that are not yet present on the server
+    const newLocalWords = words.filter(w => !serverWordSet.has(w.word));
+    newLocalWords.forEach(w => {
+      const cleanItem = {
+        word: w.word,
+        translations: w.rawTranslations || w.translations,
+        description: w.description || "",
+        past: w.rawPast || w.past || null,
+      };
+
+      if (w.image) cleanItem.image = w.image;
+
+      if (syncCustomList && customWords.includes(w.word)) {
+        cleanItem.custom_list = true;
+        cleanItem.group = getWordGroup(w.word);
+      }
+
+      if (w.sentences && w.sentences.length > 0) {
+        cleanItem.sentences = w.sentences.map(s => ({
+          sentence: s.sentence,
+          fill: s.fill
+        }));
+      }
+
+      sortedExportData.push(cleanItem);
+    });
+
+    const jsonString = JSON.stringify(sortedExportData, null, 1);
+    const utf8Bytes  = new TextEncoder().encode(jsonString);
+    let binary = '';
+    const chunkSize = 0x8000;
+    for (let i = 0; i < utf8Bytes.length; i += chunkSize) {
+      binary += String.fromCharCode(...utf8Bytes.subarray(i, i + chunkSize));
+    }
+    const base64Content = btoa(binary);
+
+    const putResponse = await fetch(url, {
+      method: 'PUT',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: 'Sync words.json',
+        content: base64Content,
+        sha: currentSha
+      })
+    });
+
+    if (!putResponse.ok) {
+      const errorDetails = await putResponse.json();
+      throw new Error(errorDetails.message || 'Error en la subida.');
+    }
+
+    alert('¡Cambios guardados en GitHub correctamente!');
+  } catch (error) {
+    console.error(error);
+    alert('Error al exportar cambios: ' + error.message);
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
+function switchPanelTab(tab) {
+  panelTab = tab;
+
+  document.getElementById('tabAll').classList.toggle('active', tab === 'all');
+  document.getElementById('tabCustom').classList.toggle('active', tab === 'custom');
+  document.getElementById('tabConfig').classList.toggle('active', tab === 'config');
+  document.getElementById('tabGroups').classList.toggle('active', tab === 'groups');
+
+  const isConfig  = (tab === 'config');
+  const isGroups  = (tab === 'groups');
+  const isList    = !isConfig && !isGroups;
+
+  document.getElementById('panelList').style.display   = isList   ? 'flex' : 'none';
+  document.getElementById('panelConfig').style.display = isConfig ? 'flex' : 'none';
+  document.getElementById('panelGroups').style.display = isGroups ? 'flex' : 'none';
+
+  document.getElementById('panelActionsAll').style.display    = (tab === 'all')    ? '' : 'none';
+  document.getElementById('panelActionsCustom').style.display = (tab === 'custom') ? '' : 'none';
+  document.getElementById('panelActionsGroups').style.display = (tab === 'groups') ? '' : 'none';
+
+  if (isList)    renderPanelList();
+  if (isGroups)  renderGroupsTab();
+}
+
 // Asignar listeners globales para cerrar, reiniciar pesos, pestañas y limpiar lista
 document.getElementById('closePanelBtn').addEventListener('click', closeWeightsPanel);
 document.getElementById('resetWeightsBtn').addEventListener('click', resetAllWeights);
@@ -1915,8 +2363,46 @@ document.getElementById('clearCustomBtn').addEventListener('click', clearCustomL
 document.getElementById('tabAll').addEventListener('click', () => switchPanelTab('all'));
 document.getElementById('tabCustom').addEventListener('click', () => switchPanelTab('custom'));
 document.getElementById('exportCustomBtn').addEventListener('click', exportCustomListJSON);
-document.getElementById('syncMainBtn').addEventListener('click', handleSyncWords);
 document.getElementById('loadCustomFromJsonBtn').addEventListener('click', handleLoadCustomFromJSON);
+document.getElementById('exportCustomBtn').addEventListener('click', exportCustomListJSON);
+document.getElementById('tabConfig').addEventListener('click', () => switchPanelTab('config'));
+document.getElementById('tabGroups').addEventListener('click', () => switchPanelTab('groups'));
+document.getElementById('applyGroupSizeBtn').addEventListener('click', () => {
+  const val = parseInt(document.getElementById('groupSizeInput').value, 10);
+  if (isNaN(val) || val < 1) { alert('Introduce un número válido.'); return; }
+  groupSize = val;
+  localStorage.setItem('group_size', groupSize);
+  selectedGroups = [];
+  localStorage.setItem('selected_groups', '[]');
+  renderGroupsTab();
+});
+document.getElementById('toggleGroupModeBtn').addEventListener('click', () => {
+  if (!useGroupMode && selectedGroups.length === 0) {
+    alert('Selecciona al menos un grupo primero.');
+    return;
+  }
+  useGroupMode = !useGroupMode;
+  localStorage.setItem('use_group_mode', useGroupMode);
+  renderGroupsTab();
+  const customToggle = document.getElementById('customModeToggle');
+  if (customToggle && customToggle.checked) { updateStats(); nextWord(); }
+});
+document.getElementById('clearGroupSelectionBtn').addEventListener('click', () => {
+  selectedGroups = [];
+  useGroupMode = false;
+  localStorage.setItem('selected_groups', '[]');
+  localStorage.setItem('use_group_mode', 'false');
+  renderGroupsTab();
+});
+// Github
+document.getElementById('githubToken').value = localStorage.getItem('sync_gh_token') || '';
+document.getElementById('githubUser').value = localStorage.getItem('sync_gh_user') || '';
+document.getElementById('githubRepo').value = localStorage.getItem('sync_gh_repo') || '';
+document.getElementById('githubToken').addEventListener('input', (e) => localStorage.setItem('sync_gh_token', e.target.value));
+document.getElementById('githubUser').addEventListener('input', (e) => localStorage.setItem('sync_gh_user', e.target.value));
+document.getElementById('githubRepo').addEventListener('input', (e) => localStorage.setItem('sync_gh_repo', e.target.value));
+document.getElementById('syncMainBtn').addEventListener('click', handleSyncWords);
+document.getElementById('pushToGithubBtn').addEventListener('click', pushToGitHub);
 
 // ── Boot ───────────────────────────────────────────────
 initUI();
