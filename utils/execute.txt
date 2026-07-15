@@ -1,1 +1,3 @@
 py update_custom_list.py temp.json words.json
+
+py '.\add images to json.py' .\json.json ..\words.json

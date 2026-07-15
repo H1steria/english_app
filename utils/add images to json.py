@@ -31,14 +31,97 @@ except ImportError:
     sys.exit("Falta la dependencia Pillow. Instálala con: pip install pillow")
 
 # ---------------------------------------------------------------------------
-# Configuración
+# Configuración y Análisis de Argumentos
 # ---------------------------------------------------------------------------
-JSON_PATH = Path(sys.argv[1] if len(sys.argv) > 1 else "words.json")
-PORT = int(sys.argv[2]) if len(sys.argv) > 2 else 8765
+# Separar argumentos según su extensión o formato
+json_files = [Path(arg) for arg in sys.argv[1:] if arg.lower().endswith(".json")]
+ports = [int(arg) for arg in sys.argv[1:] if arg.isdigit()]
+
+# Asignación de variables de configuración seguras
+JSON_PATH = json_files[0] if len(json_files) > 0 else Path("words.json")
+PORT = ports[0] if ports else 8765
 MAX_BYTES = 7 * 1024  # tope de 7 KB para la imagen ya comprimida
 
+def reorder_entry(entry):
+    """Garantiza el orden estricto de las claves: ..., 'past', 'image', 'custom_list'."""
+    if not isinstance(entry, dict):
+        return entry
+    
+    # Definimos el orden exacto deseado
+    key_order = ["word", "phrasal_verb", "translations", "description", "past", "image", "custom_list"]
+    
+    ordered = {}
+    # Insertar primero las llaves conocidas en el orden correcto
+    for key in key_order:
+        if key in entry:
+            ordered[key] = entry[key]
+            
+    # Insertar cualquier otra llave imprevista al final para evitar pérdida de datos
+    for key, value in entry.items():
+        if key not in ordered:
+            ordered[key] = value
+            
+    return ordered
+
+# Lógica del segundo script (verificación de duplicados) integrada al inicio
+if len(json_files) >= 2:
+    ruta_json1 = json_files[0]
+    ruta_json2 = json_files[1]
+    
+    print(f"Modo Verificación: Comparando '{ruta_json1.name}' con '{ruta_json2.name}'...")
+    
+    if not ruta_json1.exists() or not ruta_json2.exists():
+        sys.exit("Error: Uno o ambos archivos JSON especificados no existen.")
+
+    try:
+        with open(ruta_json1, "r", encoding="utf-8") as f:
+            datos1 = json.load(f)
+        with open(ruta_json2, "r", encoding="utf-8") as f:
+            datos2 = json.load(f)
+
+        def get_term_temp(entry):
+            if isinstance(entry, dict):
+                return entry.get("word") or entry.get("phrasal_verb")
+            return None
+
+        palabras_json2 = {
+            get_term_temp(item).strip().lower() 
+            for item in datos2 
+            if isinstance(item, dict) and get_term_temp(item) is not None
+        }
+
+        duplicados_encontrados = []
+        for item in datos1:
+            term = get_term_temp(item)
+            if term is not None:
+                palabra = term.strip()
+                if palabra.lower() in palabras_json2:
+                    duplicados_encontrados.append(palabra)
+
+        if duplicados_encontrados:
+            print(f"Se encontraron {len(duplicados_encontrados)} duplicados de '{ruta_json1.name}' en '{ruta_json2.name}':")
+            for palabra in duplicados_encontrados:
+                print(f" - {palabra}")
+        else:
+            print("No se encontraron elementos duplicados entre ambos archivos.")
+
+        # Reordenar todos los elementos de ambos JSON antes de formatear
+        datos1_ordenados = [reorder_entry(item) for item in datos1]
+        datos2_ordenados = [reorder_entry(item) for item in datos2]
+
+        print("\nAplicando formato de legibilidad (indent=1) a los archivos...")
+        with open(ruta_json1, 'w', encoding='utf-8') as archivo:
+            json.dump(datos1_ordenados, archivo, indent=1, ensure_ascii=False)
+        with open(ruta_json2, 'w', encoding='utf-8') as archivo:
+            json.dump(datos2_ordenados, archivo, indent=1, ensure_ascii=False)
+        print("Archivos formateados y guardados.\n" + "-" * 50 + "\n")
+
+    except Exception as e:
+        print(f"Error al analizar duplicados: {e}")
+        sys.exit(1)
+
 if not JSON_PATH.exists():
-    sys.exit(f"No existe el archivo: {JSON_PATH}")
+    sys.exit(f"No existe el archivo de trabajo: {JSON_PATH}")
 
 lock = threading.Lock()
 
@@ -46,34 +129,50 @@ def load_data():
     with open(JSON_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
 
+def guardar_json_formateado(datos, ruta_archivo):
+    """Guarda los datos en el archivo correspondiente con un formato legible (indent=1)."""
+    try:
+        with open(ruta_archivo, 'w', encoding='utf-8') as archivo:
+            json.dump(datos, archivo, indent=1, ensure_ascii=False)
+        print(f"Archivo '{ruta_archivo}' formateado y guardado.")
+    except Exception as e:
+        print(f"No se pudo guardar el archivo '{ruta_archivo}': {e}")
+
 def save_data(payload, retries=8, delay=0.25):
-    """
-    Guarda con escritura atómica (archivo temporal + replace).
-    Reintenta si el archivo está bloqueado (p.ej. por VSCode en Windows).
-    """
+    """Guarda de forma atómica respetando el formato indent=1."""
     tmp = JSON_PATH.with_suffix(JSON_PATH.suffix + ".tmp")
     with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(payload, f, ensure_ascii=False, indent=2)
+        json.dump(payload, f, ensure_ascii=False, indent=1)
     last_err = None
     for attempt in range(retries):
         try:
             tmp.replace(JSON_PATH)
-            return  # éxito
+            return
         except PermissionError as e:
             last_err = e
             time.sleep(delay)
-    # último intento: si falla, que el error suba
     try:
         tmp.replace(JSON_PATH)
     except PermissionError:
-        # Plan B: sobrescribir directamente si replace sigue fallando
-        with open(JSON_PATH, "w", encoding="utf-8") as f:
-            json.dump(payload, f, ensure_ascii=False, indent=2)
+        guardar_json_formateado(payload, JSON_PATH)
         try:
             tmp.unlink()
         except OSError:
             pass
         print(f"[WARN] Escritura atómica falló ({last_err}); se escribió directamente.")
+
+def find_next_pending(start):
+    i = start
+    n = len(data)
+    while i < n:
+        entry = data[i]
+        if entry.get("image"):
+            term = get_term(entry) or "Sin nombre"
+            print(f"[SKIP-AUTO] '{term}' ya tiene imagen, se omite.")
+            i += 1
+            continue
+        return i
+    return n
 
 data = load_data()
 if not isinstance(data, list):
@@ -81,19 +180,11 @@ if not isinstance(data, list):
 
 pointer = 0
 
-def find_next_pending(start):
-    """Avanza desde `start` saltando (con log en consola) las palabras que
-    ya tienen imagen asignada."""
-    i = start
-    n = len(data)
-    while i < n:
-        entry = data[i]
-        if entry.get("image"):
-            print(f"[SKIP-AUTO] '{entry.get('word')}' ya tiene imagen, se omite.")
-            i += 1
-            continue
-        return i
-    return n
+def get_term(entry):
+    """Obtiene el término de la entrada, soportando 'word' y 'phrasal_verb'."""
+    if isinstance(entry, dict):
+        return entry.get("word") or entry.get("phrasal_verb")
+    return None
 
 pointer = find_next_pending(0)
 
@@ -129,7 +220,7 @@ def compress_image(raw_bytes, max_bytes=MAX_BYTES):
         if scale < 1.0:
             resized = img.resize(
                 (max(1, round(w * scale)), max(1, round(h * scale))),
-                Image.LANCZOS,
+                Image.Resampling.LANCZOS,
             )
         else:
             resized = img
@@ -157,7 +248,7 @@ def current_state(extra=None):
             "done": False,
             "index": pointer,
             "total": n,
-            "word": entry.get("word"),
+            "word": get_term(entry),
             "translations": entry.get("translations") or [],
             "description": entry.get("description"),
             "past": entry.get("past"),
@@ -422,13 +513,10 @@ class Handler(BaseHTTPRequestHandler):
                     self._send_json(current_state())
                     return
 
-                # ── Validar que el cliente está subiendo para la palabra
-                #    correcta. Si el pointer avanzó desde que el cliente
-                #    cargó la página (p.ej. por un skip tardío), rechazar.
                 expected = payload.get("expectedIndex")
                 if expected is not None and int(expected) != pointer:
-                    word_expected = data[int(expected)].get("word") if int(expected) < len(data) else "?"
-                    word_current  = data[pointer].get("word")
+                    word_expected = get_term(data[int(expected)]) if int(expected) < len(data) else "?"
+                    word_current  = get_term(data[pointer])
                     print(
                         f"[CONFLICT] Upload rechazado: cliente envió índice {expected} "
                         f"('{word_expected}') pero el pointer está en {pointer} ('{word_current}')."
@@ -456,16 +544,20 @@ class Handler(BaseHTTPRequestHandler):
                 b64 = base64.b64encode(compressed).decode("ascii")
                 entry = data[pointer]
                 entry["image"] = f"data:image/jpeg;base64,{b64}"
+                
+                # Reordenamos la entrada para asegurar que 'image' quede antes de 'custom_list'
+                data[pointer] = reorder_entry(entry)
+                
                 try:
                     save_data(data)
                 except Exception as e:
-                    # Revertir en memoria si no se pudo guardar
+                    # Revertir en memoria si falla
                     entry["image"] = None
                     self._send_json({"error": f"No se pudo guardar el archivo: {e}"}, 500)
                     return
 
                 print(
-                    f"[OK] '{entry.get('word')}' -> imagen guardada "
+                    f"[OK] '{get_term(entry)}' -> imagen guardada "
                     f"({len(compressed)} bytes, {dim}px, calidad {q})."
                 )
                 pointer = find_next_pending(pointer + 1)
@@ -475,20 +567,77 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/api/skip":
             with lock:
                 if pointer < len(data):
-                    print(f"[SKIP-MANUAL] '{data[pointer].get('word')}' omitida por el usuario.")
+                    print(f"[SKIP-MANUAL] '{get_term(data[pointer])}' omitida por el usuario.")
                     pointer = find_next_pending(pointer + 1)
                 self._send_json(current_state())
             return
 
         self._send_json({"error": "not found"}, 404)
 
-    def log_message(self, fmt, *args):
+    def log_message(self, format, *args):
         pass  # silenciamos el log HTTP por defecto; usamos nuestros propios prints
 
 def main():
+    # Detectar argumentos JSON y puertos en la entrada
+    json_files = [Path(arg) for arg in sys.argv[1:] if arg.lower().endswith(".json")]
+    ports = [int(arg) for arg in sys.argv[1:] if arg.isdigit()]
+
+    global JSON_PATH, PORT, data, pointer
+    
+    JSON_PATH = json_files[0] if len(json_files) > 0 else Path("words.json")
+    PORT = ports[0] if ports else 8765
+
+    # Si se pasan dos archivos JSON, realizamos la lógica de verificación de duplicados
+    if len(json_files) >= 2:
+        ruta_json1 = json_files[0]
+        ruta_json2 = json_files[1]
+        
+        print(f"Modo Verificación: Comparando '{ruta_json1.name}' con '{ruta_json2.name}'...")
+        
+        if not ruta_json1.exists() or not ruta_json2.exists():
+            sys.exit("Error: Uno o ambos archivos JSON especificados no existen.")
+
+        with open(ruta_json1, "r", encoding="utf-8") as f:
+            datos1 = json.load(f)
+        with open(ruta_json2, "r", encoding="utf-8") as f:
+            datos2 = json.load(f)
+
+        palabras_json2 = {
+            get_term(item).strip().lower() 
+            for item in datos2 
+            if isinstance(item, dict) and get_term(item) is not None
+        }
+
+        duplicados_encontrados = []
+        for item in datos1:
+            term = get_term(item)
+            if term is not None:
+                palabra = term.strip()
+                if palabra.lower() in palabras_json2:
+                    duplicados_encontrados.append(palabra)
+
+        if duplicados_encontrados:
+            print(f"Se encontraron {len(duplicados_encontrados)} duplicados de '{ruta_json1.name}' en '{ruta_json2.name}':")
+            for palabra in duplicados_encontrados:
+                print(f" - {palabra}")
+        else:
+            print("No se encontraron elementos duplicados entre ambos archivos.")
+
+        print("\nAplicando formato de legibilidad (indent=1) a los archivos...")
+        guardar_json_formateado(datos1, ruta_json1)
+        guardar_json_formateado(datos2, ruta_json2)
+        print("-" * 50)
+
+    # Inicializar datos para el servidor de imágenes
+    if not JSON_PATH.exists():
+        sys.exit(f"No existe el archivo de trabajo: {JSON_PATH}")
+
+    data = load_data()
+    pointer = find_next_pending(0)
+
     server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     url = f"http://127.0.0.1:{PORT}/"
-    print(f"Archivo JSON: {JSON_PATH.resolve()}")
+    print(f"Archivo JSON en uso: {JSON_PATH.resolve()}")
     print(f"Servidor en {url}  (Ctrl+C para salir)")
     threading.Timer(0.6, lambda: webbrowser.open(url)).start()
     try:

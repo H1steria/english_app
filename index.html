@@ -696,137 +696,276 @@
   </div>
 </div>
 
+<template id="tplPanelSectionHeader">
+  <div class="panel-section-header">
+    <span class="section-title"></span>
+    <span class="section-count"></span>
+  </div>
+</template>
+
+<template id="tplPanelItem">
+  <div class="panel-item">
+    <span class="word-name"></span>
+    <span class="type-badge"></span>
+    <span class="word-weight"></span>
+    <div class="item-actions">
+      <button class="icon-btn add" data-action="add-custom" title="Añadir a mi lista">➕</button>
+      <button class="icon-btn remove" data-action="remove-custom" title="Quitar de mi lista">✖</button>
+    </div>
+  </div>
+</template>
+
+<template id="tplPanelEmpty">
+  <div class="panel-empty"></div>
+</template>
+
+<template id="tplGroupCard">
+  <div class="group-card">
+    <div class="group-card-header">
+      <input type="checkbox" class="group-checkbox">
+      <span class="group-title"></span>
+      <span class="group-count"></span>
+      <span class="group-arrow">▼</span>
+    </div>
+    <div class="group-card-body"></div>
+  </div>
+</template>
+
+<template id="tplGroupWordRow">
+  <div class="group-word-row">• <span class="group-word-text"></span></div>
+</template>
+
+<template id="tplLedPill">
+  <span class="led-pill"></span>
+</template>
+
+<template id="tplMissingItemsContainer">
+  <div class="missing-items-container"></div>
+</template>
+
 <script>
+// ── Constants ──────────────────────────────────────────
+const PAST_PREFIX = "su pasado es";
+const RECENT_LIMIT = 20;
+const WORDS_URL = 'https://raw.githubusercontent.com/H1steria/english_app/refs/heads/master/words.json';
+const PHRASAL_VERBS_URL = 'https://raw.githubusercontent.com/H1steria/english_app/refs/heads/master/phrasal_verbs.json';
+const MAIN_WORDS_STORAGE_KEY = 'cached_words';
+const MAIN_PHRASALS_STORAGE_KEY = 'cached_phrasal_verbs';
+const COMPLETED_STORAGE_KEY = 'completed_words';
+const CUSTOM_STORAGE_KEY = 'custom_words';
+const WEIGHTS_STORAGE_KEY = 'englishup_word_weights';
+
 // ── State ──────────────────────────────────────────────
+// `words` is a UNIFIED list: vocabulary words + phrasal verbs.
+// Each entry carries `type: 'word' | 'phrasal_verb'` and stores its
+// text in `.word` regardless of source, so the rest of the app
+// (modes, scoring, weights, hints) doesn't need to know the difference.
 let words = [];
 let current = null;
 let streak = 0;
 let usedIndices = [];
 let wordCountTrigger = 0;
 let recentlySeen = [];
-const RECENT_LIMIT = 20; // Número máximo de palabras a recordar
-let currentMode = 'en-es'; // Modos posibles: 'en-es', 'img-en', 'sentence'
-let currentSentence = null; // Guardará la oración seleccionada en el modo 'sentence'
-const PAST_PREFIX = "su pasado es";
+let currentMode = 'en-es';
+let currentSentence = null;
 let groupSize = parseInt(localStorage.getItem('group_size') || '20', 10);
 let selectedGroups = JSON.parse(localStorage.getItem('selected_groups') || '[]');
 let useGroupMode = localStorage.getItem('use_group_mode') === 'true';
 let revealCount = 0;
-const WORDS_URL = 'https://raw.githubusercontent.com/H1steria/english_app/refs/heads/master/words.json';
-const MAIN_WORDS_STORAGE_KEY = 'cached_words';
-const COMPLETED_STORAGE_KEY = 'completed_words';
-const CUSTOM_STORAGE_KEY = 'custom_words';
-
-// ── Estado de Palabras Completadas (Modo Ciclo) ──
+let panelTab = 'all';
 let completedWords = loadCompletedWords();
-
-// ── Estado de Diccionario Personalizado ──
 let customWords = loadCustomWords();
 
-// ── Estado del panel (pestaña activa) ──
-let panelTab = 'all';
-
+// ── Persistence helpers ─────────────────────────────────
 function loadCompletedWords() {
   const saved = localStorage.getItem(COMPLETED_STORAGE_KEY);
-  if (saved) {
-    try {
-      return JSON.parse(saved);
-    } catch (e) {
-      return [];
-    }
-  }
-  return [];
+  if (!saved) return [];
+  try { return JSON.parse(saved); } catch (e) { return []; }
 }
-
 function saveCompletedWords() {
   localStorage.setItem(COMPLETED_STORAGE_KEY, JSON.stringify(completedWords));
 }
-
 function loadCustomWords() {
   const saved = localStorage.getItem(CUSTOM_STORAGE_KEY);
-  if (saved) {
-    try {
-      return JSON.parse(saved);
-    } catch (e) {
-      return [];
-    }
-  }
-  return [];
+  if (!saved) return [];
+  try { return JSON.parse(saved); } catch (e) { return []; }
 }
-
 function saveCustomWords() {
   localStorage.setItem(CUSTOM_STORAGE_KEY, JSON.stringify(customWords));
 }
+function loadSavedWeights() {
+  const saved = localStorage.getItem(WEIGHTS_STORAGE_KEY);
+  if (!saved) return {};
+  try { return JSON.parse(saved); } catch (e) { return {}; }
+}
+function syncWeightsWithStorage() {
+  const savedWeights = loadSavedWeights();
+  words.forEach(w => { savedWeights[w.word] = w.weight; });
+  localStorage.setItem(WEIGHTS_STORAGE_KEY, JSON.stringify(savedWeights));
+}
 
-// ── Load words ─────────────────────────────────────────
+// ── Networking helpers ──────────────────────────────────
+async function fetchJSON(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`HTTP ${response.status} al obtener ${url}`);
+  return response.json();
+}
+function safeStr(v) {
+  return (typeof v === 'string') ? v : '';
+}
+
+// ── Load & normalize data ───────────────────────────────
 async function loadWords() {
   try {
-    let data = null;
-    const cachedData = localStorage.getItem(MAIN_WORDS_STORAGE_KEY);
+    const cachedWords = localStorage.getItem(MAIN_WORDS_STORAGE_KEY);
+    const cachedPhrasals = localStorage.getItem(MAIN_PHRASALS_STORAGE_KEY);
+    let wordsData = null;
+    let phrasalData = null;
 
-    try {
-      const response = await fetch(WORDS_URL);
-      if (response.ok) {
-        data = await response.json();
-        localStorage.setItem(MAIN_WORDS_STORAGE_KEY, JSON.stringify(data));
-      }
-    } catch (fetchError) {
-      console.warn("No se pudo obtener el archivo remoto, intentando cargar copia de seguridad local.", fetchError);
+    const [wordsResult, phrasalResult] = await Promise.allSettled([
+      fetchJSON(WORDS_URL),
+      fetchJSON(PHRASAL_VERBS_URL)
+    ]);
+
+    if (wordsResult.status === 'fulfilled') {
+      wordsData = wordsResult.value;
+      localStorage.setItem(MAIN_WORDS_STORAGE_KEY, JSON.stringify(wordsData));
+    } else {
+      console.warn("No se pudo obtener words.json remoto.", wordsResult.reason);
+    }
+    if (phrasalResult.status === 'fulfilled') {
+      phrasalData = phrasalResult.value;
+      localStorage.setItem(MAIN_PHRASALS_STORAGE_KEY, JSON.stringify(phrasalData));
+    } else {
+      console.warn("No se pudo obtener phrasal_verbs.json remoto.", phrasalResult.reason);
     }
 
-    if (!data && cachedData) {
-      data = JSON.parse(cachedData);
-    }
+    if (!wordsData && cachedWords) wordsData = JSON.parse(cachedWords);
+    if (!phrasalData && cachedPhrasals) phrasalData = JSON.parse(cachedPhrasals);
 
-    if (!data) {
+    if (!wordsData && !phrasalData) {
       throw new Error('No se encontraron datos en caché ni se pudo establecer conexión con el servidor.');
     }
 
-    processLoadedData(data);
+    processLoadedData(wordsData || [], phrasalData || []);
     nextWord();
     document.getElementById('appMain').classList.remove('is-loading');
-  } catch(e) {
+  } catch (e) {
+    const isNetworkIssue = e instanceof TypeError && /fetch/i.test(e.message);
     document.getElementById('loadingMsg').innerHTML =
-      '❌ Error al cargar el vocabulario.<br>Por favor, comprueba tu conexión de red.';
+      (isNetworkIssue
+        ? '❌ Error al cargar el vocabulario.<br>Por favor, comprueba tu conexión de red.<br>'
+        : '❌ Error al procesar el vocabulario (datos con formato inválido).<br>')
+      + e.message;
   }
 }
 
-function processLoadedData(data) {
+function buildNormalizedEntry(raw, type, savedWeights, index, issues) {
+  const label = type === 'phrasal_verb' ? 'phrasal_verb' : 'word';
+  if (!raw || typeof raw !== 'object') {
+    const msg = `Entrada #${index} (${label}) inválida: no es un objeto.`;
+    console.warn(msg, raw);
+    issues.push(msg);
+    return null;
+  }
+  const rawTerm = type === 'phrasal_verb' ? raw.phrasal_verb : raw.word;
+  const term = safeStr(rawTerm).trim();
+  if (!term) {
+    const msg = `Entrada #${index}: falta el campo "${label}".`;
+    console.warn(msg, raw);
+    issues.push(msg);
+    return null;
+  }
+  if (!Array.isArray(raw.translations) || raw.translations.length === 0) {
+    const msg = `"${term}": falta "translations" o está vacío.`;
+    console.warn(msg, raw);
+    issues.push(msg);
+    return null;
+  }
+  const cleanTranslations = raw.translations
+    .map(t => safeStr(t).trim())
+    .filter(Boolean);
+  if (cleanTranslations.length === 0) {
+    const msg = `"${term}": "translations" no contiene strings válidos.`;
+    console.warn(msg, raw);
+    issues.push(msg);
+    return null;
+  }
+  const savedWeight = savedWeights[term];
+  const weight = (savedWeight !== undefined) ? savedWeight : 1;
+  const processedSentences = Array.isArray(raw.sentences)
+    ? raw.sentences
+        .filter(s => {
+          const ok = s && typeof s.sentence === 'string' && typeof s.fill === 'string';
+          if (!ok) {
+            const msg = `"${term}": una entrada de "sentences" es inválida y fue omitida.`;
+            console.warn(msg, s);
+            issues.push(msg);
+          }
+          return ok;
+        })
+        .map(s => ({
+          sentence: s.sentence,
+          fill: removeAccents(s.fill.toLowerCase().trim())
+        }))
+    : null;
+  const rawPast = (typeof raw.past === 'string' && raw.past.trim()) ? raw.past.trim() : null;
+  return {
+    ...raw,
+    word: term,
+    type: type,
+    rawTranslations: raw.translations.map(t => safeStr(t).trim()).filter(Boolean),
+    rawPast: rawPast,
+    translations: cleanTranslations.map(t => removeAccents(t.toLowerCase())),
+    past: rawPast ? removeAccents(rawPast.toLowerCase()) : null,
+    sentences: (processedSentences && processedSentences.length > 0) ? processedSentences : null,
+    image: raw.image || null,
+    weight: weight,
+    custom_list: raw.custom_list || false,
+    originalIndex: index
+  };
+}
+
+function processLoadedData(wordsData, phrasalData) {
   const savedWeights = loadSavedWeights();
+  const issues = [];
+  let index = 0;
+  const normalizedWords = wordsData
+    .map(w => buildNormalizedEntry(w, 'word', savedWeights, index++, issues))
+    .filter(Boolean);
+  const normalizedPhrasals = phrasalData
+    .map(p => buildNormalizedEntry(p, 'phrasal_verb', savedWeights, index++, issues))
+    .filter(Boolean);
 
-  words = data.map((w, index) => {
-    const normalizedWord = w.word.trim();
-    const savedWeight = savedWeights[normalizedWord];
-    const weight = (savedWeight !== undefined) ? savedWeight : 1;
+  words = [...normalizedWords, ...normalizedPhrasals];
 
-    const processedSentences = w.sentences ? w.sentences.map(s => ({
-      sentence: s.sentence,
-      fill: removeAccents(s.fill.toLowerCase().trim())
-    })) : null;
+  if (words.length === 0) {
+    throw new Error('Los datos se cargaron pero ninguna entrada es válida (revisa el formato del JSON).');
+  }
 
-    return {
-      ...w,
-      word: normalizedWord,
-      rawTranslations: w.translations,
-      rawPast: w.past || null,
-      translations: w.translations.map(t => removeAccents(t.toLowerCase().trim())),
-      past: w.past ? removeAccents(w.past.toLowerCase().trim()) : null,
-      sentences: processedSentences,
-      image: w.image || null,
-      weight: weight,
-      custom_list: w.custom_list || false,
-      originalIndex: index // Store the original sequence index
-    };
-  });
+  if (issues.length > 0) {
+    reportDataIssues(issues);
+  }
 
   syncWeightsWithStorage();
-
   const validWords = new Set(words.map(w => w.word));
   const cleanedCustom = customWords.filter(w => validWords.has(w));
   if (cleanedCustom.length !== customWords.length) {
     customWords = cleanedCustom;
     saveCustomWords();
   }
+}
+
+function reportDataIssues(issues) {
+  console.warn(`Se encontraron ${issues.length} problema(s) en los datos:`, issues);
+  const MAX_SHOWN = 8;
+  const preview = issues.slice(0, MAX_SHOWN).map(m => `• ${m}`).join('\n');
+  const extra = issues.length > MAX_SHOWN ? `\n…y ${issues.length - MAX_SHOWN} más (ver consola).` : '';
+  alert(
+    `⚠️ Se detectaron ${issues.length} entrada(s) con datos inválidos en el vocabulario.\n` +
+    `Fueron omitidas para que la app pueda seguir funcionando.\n\n${preview}${extra}\n\n` +
+    `Revisa words.json / phrasal_verbs.json y la consola (F12) para más detalle.`
+  );
 }
 
 function resetAllWordProgress() {
@@ -843,22 +982,20 @@ async function handleSyncWords() {
   const originalText = syncBtn.textContent;
   syncBtn.textContent = '⏳ ...';
   syncBtn.disabled = true;
-
   try {
-    const response = await fetch(WORDS_URL);
-    if (!response.ok) throw new Error('Error al conectar con la base de datos remota.');
-    
-    const data = await response.json();
-    localStorage.setItem(MAIN_WORDS_STORAGE_KEY, JSON.stringify(data));
-    
-    resetAllWordProgress();
-    processLoadedData(data);
-    alert('Sincronización y reinicio completados con éxito.');
-    
-    const countEl = document.getElementById('panelWordCount');
-    if (countEl) countEl.textContent = `Total: ${words.length} palabras`;
-    renderPanelList();
+    const [wordsData, phrasalData] = await Promise.all([
+      fetchJSON(WORDS_URL),
+      fetchJSON(PHRASAL_VERBS_URL)
+    ]);
+    localStorage.setItem(MAIN_WORDS_STORAGE_KEY, JSON.stringify(wordsData));
+    localStorage.setItem(MAIN_PHRASALS_STORAGE_KEY, JSON.stringify(phrasalData));
 
+    resetAllWordProgress();
+    processLoadedData(wordsData, phrasalData);
+    alert('Sincronización y reinicio completados con éxito.');
+
+    updatePanelWordCount();
+    renderPanelList();
     nextWord();
   } catch (error) {
     alert('No se pudo realizar la sincronización: ' + error.message);
@@ -869,26 +1006,19 @@ async function handleSyncWords() {
 }
 
 function handleLoadCustomFromJSON() {
-  const confirmation = confirm('¿Deseas reemplazar tu lista personalizada actual por la lista predefinida del servidor (palabras con "custom_list: true")?');
+  const confirmation = confirm('¿Deseas reemplazar tu lista personalizada actual por la lista predefinida del servidor (elementos con "custom_list: true")?');
   if (!confirmation) return;
-
   const predefs = words.filter(w => w.custom_list === true).map(w => w.word);
-
   if (predefs.length === 0) {
-    alert('No se encontraron palabras configuradas en la lista predefinida.');
+    alert('No se encontraron elementos configurados en la lista predefinida.');
     return;
   }
-
   customWords = predefs;
   saveCustomWords();
-
-  const customCountTab = document.getElementById('customCountTab');
-  if (customCountTab) customCountTab.textContent = customWords.length;
-
-  alert(`Se han cargado ${predefs.length} palabras predefinidas a tu lista.`);
+  updateCustomCountTab();
+  alert(`Se han cargado ${predefs.length} elementos predefinidos a tu lista.`);
   renderPanelList();
   renderGroupsTab();
-
   const customToggle = document.getElementById('customModeToggle');
   if (customToggle && customToggle.checked && customWords.length === 0) {
     customToggle.checked = false;
@@ -898,55 +1028,35 @@ function handleLoadCustomFromJSON() {
   }
 }
 
-// ── Función para eliminar tildes y normalizar texto ────────────────
+// ── Texto: normalización y enmascarado ─────────────────
 function removeAccents(text) {
   if (!text) return "";
-  return text
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, ""); // Remueve tildes y diacríticos
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
-
 function getMaskedWord(wordStr, currentReveal = 0) {
-  const clean = wordStr.trim();
+  const clean = safeStr(wordStr).trim();
   if (!clean) return "";
-  
-  // Si contiene comas o barras inclinadas, procesamos cada opción por separado
   if (clean.includes(',')) {
-    return clean.split(',')
-      .map(part => getMaskedWord(part, currentReveal))
-      .join(',\u00A0\u00A0');
+    return clean.split(',').map(part => getMaskedWord(part, currentReveal)).join(',\u00A0\u00A0');
   }
   if (clean.includes('/')) {
-    return clean.split('/')
-      .map(part => getMaskedWord(part, currentReveal))
-      .join('\u00A0/\u00A0');
+    return clean.split('/').map(part => getMaskedWord(part, currentReveal)).join('\u00A0/\u00A0');
   }
-  
   let letterCounter = 0;
   const characters = clean.split('');
-  
   const processedChars = characters.map((char) => {
-    if (char === ' ') {
-      return '\u00A0\u00A0\u00A0';
-    }
-    // Preservamos signos de puntuación comunes sin enmascararlos con guiones bajos
-    if (/[\s.()\-?!]/.test(char)) {
-      return char;
-    }
+    if (char === ' ') return '\u00A0\u00A0\u00A0';
+    if (/[\s.()\-?!]/.test(char)) return char;
     const shouldReveal = (letterCounter === 0 || letterCounter <= currentReveal);
     letterCounter++;
     return shouldReveal ? char : '_';
   });
-  
   return processedChars.join('\u00A0');
 }
-
 function updateHintText() {
   if (!current) return;
-  
   let hintText = "";
   let showRevealBtn = false;
-
   if (currentMode === 'en-es') {
     const maskedTrans = current.rawTranslations.map(t => getMaskedWord(t, revealCount)).join(' ;\u00A0\u00A0\u00A0');
     const maskedPast = current.past ? `\nPasado: ${getMaskedWord(current.rawPast || current.past, revealCount)}` : "";
@@ -960,17 +1070,14 @@ function updateHintText() {
       : `Palabra: ${maskedWord}`;
     showRevealBtn = true;
   } else if (currentMode === 'img-en') {
-      const maskedWord = getMaskedWord(current.word, revealCount);
-      const maskedTrans = current.rawTranslations.map(t => getMaskedWord(t, revealCount)).join(', ');
-      const maskedPast = current.past ? `\nPasado: ${getMaskedWord(current.rawPast || current.past, revealCount)}` : "";
-      
-      hintText = `Inglés: ${maskedWord}${maskedPast}\nEspañol: ${maskedTrans}`;
-      showRevealBtn = true;
+    const maskedWord = getMaskedWord(current.word, revealCount);
+    const maskedTrans = current.rawTranslations.map(t => getMaskedWord(t, revealCount)).join(', ');
+    const maskedPast = current.past ? `\nPasado: ${getMaskedWord(current.rawPast || current.past, revealCount)}` : "";
+    hintText = `Inglés: ${maskedWord}${maskedPast}\nEspañol: ${maskedTrans}`;
+    showRevealBtn = true;
   }
-
   const hintTextEl = document.getElementById('hintText');
   const revealBtnEl = document.getElementById('revealLetterBtn');
-
   if (showRevealBtn) {
     hintTextEl.textContent = hintText;
     hintTextEl.style.display = 'block';
@@ -980,32 +1087,24 @@ function updateHintText() {
   }
 }
 
-// ── Grupos ──────────────────────────────────────────────────────
+// ── Grupos (words + phrasal_verbs mezclados) ────────────
 function calculateGroups() {
   const sorted = getSortedCustomWords();
   const groups = [];
   for (let i = 0; i < sorted.length; i += groupSize) {
-    groups.push({
-      id: Math.floor(i / groupSize) + 1,
-      words: sorted.slice(i, i + groupSize)
-    });
+    groups.push({ id: Math.floor(i / groupSize) + 1, words: sorted.slice(i, i + groupSize) });
   }
   return groups;
 }
-
-// ── Ordena customWords según su posición original en el JSON del servidor ──
 function getSortedCustomWords() {
   const indexMap = {};
-  words.forEach(w => {
-    indexMap[w.word] = w.originalIndex;
-  });
+  words.forEach(w => { indexMap[w.word] = w.originalIndex; });
   return [...customWords].sort((a, b) => {
     const ia = indexMap[a] !== undefined ? indexMap[a] : Infinity;
     const ib = indexMap[b] !== undefined ? indexMap[b] : Infinity;
     return ia - ib;
   });
 }
-
 function getWordGroup(word) {
   const sorted = getSortedCustomWords();
   const idx = sorted.indexOf(word);
@@ -1013,10 +1112,53 @@ function getWordGroup(word) {
   return Math.floor(idx / groupSize) + 1;
 }
 
+function createGroupWordRow(term) {
+  const node = document.getElementById('tplGroupWordRow').content.firstElementChild.cloneNode(true);
+  node.style.cssText = 'font-size:0.82rem; padding:2px 0; color:var(--muted);';
+  node.querySelector('.group-word-text').textContent = term;
+  return node;
+}
+function createGroupCardNode(group, isSelected) {
+  const node = document.getElementById('tplGroupCard').content.firstElementChild.cloneNode(true);
+  node.style.cssText = `background:rgba(255,255,255,0.03); border:1.5px solid ${isSelected ? 'var(--teal)' : '#ffffff12'}; border-radius:8px; overflow:hidden;`;
+  const header = node.querySelector('.group-card-header');
+  header.style.cssText = 'display:flex; align-items:center; gap:8px; padding:8px 10px; cursor:pointer;';
+  const checkbox = header.querySelector('.group-checkbox');
+  checkbox.checked = isSelected;
+  checkbox.dataset.group = group.id;
+  checkbox.style.cssText = 'accent-color:var(--teal); width:16px; height:16px; cursor:pointer;';
+  const title = header.querySelector('.group-title');
+  title.textContent = `Grupo ${group.id}`;
+  title.style.cssText = 'font-weight:700; font-size:0.88rem; flex:1;';
+  const count = header.querySelector('.group-count');
+  count.textContent = `${group.words.length} elementos`;
+  count.style.cssText = 'font-size:0.75rem; color:var(--muted);';
+  const arrow = header.querySelector('.group-arrow');
+  arrow.style.cssText = 'color:var(--muted); font-size:0.75rem; transition:transform 0.2s;';
+  const body = node.querySelector('.group-card-body');
+  body.style.cssText = 'display:none; padding:6px 10px 10px; border-top:1px solid #ffffff0a;';
+  group.words.forEach(term => body.appendChild(createGroupWordRow(term)));
+  header.addEventListener('click', e => {
+    if (e.target.type === 'checkbox') return;
+    const open = body.style.display !== 'none';
+    body.style.display = open ? 'none' : 'block';
+    arrow.style.transform = open ? '' : 'rotate(180deg)';
+  });
+  checkbox.addEventListener('change', e => {
+    const gid = parseInt(e.target.dataset.group, 10);
+    if (e.target.checked) {
+      if (!selectedGroups.includes(gid)) selectedGroups.push(gid);
+    } else {
+      selectedGroups = selectedGroups.filter(g => g !== gid);
+    }
+    localStorage.setItem('selected_groups', JSON.stringify(selectedGroups));
+    renderGroupsTab();
+  });
+  return node;
+}
 function renderGroupsTab() {
   const groupSizeInput = document.getElementById('groupSizeInput');
   if (groupSizeInput) groupSizeInput.value = groupSize;
-
   const toggleBtn = document.getElementById('toggleGroupModeBtn');
   if (toggleBtn) {
     if (useGroupMode && selectedGroups.length > 0) {
@@ -1031,99 +1173,42 @@ function renderGroupsTab() {
       toggleBtn.style.borderColor = 'rgba(15,155,142,0.3)';
     }
   }
-
   const groupsList = document.getElementById('groupsList');
   if (!groupsList) return;
   groupsList.innerHTML = '';
-
   const groups = calculateGroups();
   if (groups.length === 0) {
-    groupsList.innerHTML = '<div class="panel-empty">Tu lista personalizada está vacía.</div>';
+    groupsList.appendChild(createEmptyStateNode('Tu lista personalizada está vacía.'));
     return;
   }
-
   groups.forEach(group => {
-    const isSelected = selectedGroups.includes(group.id);
-    const wrapper = document.createElement('div');
-    wrapper.style.cssText = `background:rgba(255,255,255,0.03); border:1.5px solid ${isSelected ? 'var(--teal)' : '#ffffff12'}; border-radius:8px; overflow:hidden;`;
-
-    const header = document.createElement('div');
-    header.style.cssText = 'display:flex; align-items:center; gap:8px; padding:8px 10px; cursor:pointer;';
-    header.innerHTML = `
-      <input type="checkbox" data-group="${group.id}" ${isSelected ? 'checked' : ''}
-        style="accent-color:var(--teal); width:16px; height:16px; cursor:pointer;">
-      <span style="font-weight:700; font-size:0.88rem; flex:1;">Grupo ${group.id}</span>
-      <span style="font-size:0.75rem; color:var(--muted);">${group.words.length} palabras</span>
-      <span class="group-arrow" style="color:var(--muted); font-size:0.75rem; transition:transform 0.2s;">▼</span>
-    `;
-
-    const body = document.createElement('div');
-    body.style.cssText = 'display:none; padding:6px 10px 10px; border-top:1px solid #ffffff0a;';
-    body.innerHTML = group.words.map(w => `<div style="font-size:0.82rem; padding:2px 0; color:var(--muted);">• ${w}</div>`).join('');
-
-    header.addEventListener('click', e => {
-      if (e.target.type === 'checkbox') return;
-      const open = body.style.display !== 'none';
-      body.style.display = open ? 'none' : 'block';
-      header.querySelector('.group-arrow').style.transform = open ? '' : 'rotate(180deg)';
-    });
-
-    header.querySelector('input[type="checkbox"]').addEventListener('change', e => {
-      const gid = parseInt(e.target.getAttribute('data-group'));
-      if (e.target.checked) {
-        if (!selectedGroups.includes(gid)) selectedGroups.push(gid);
-      } else {
-        selectedGroups = selectedGroups.filter(g => g !== gid);
-      }
-      localStorage.setItem('selected_groups', JSON.stringify(selectedGroups));
-      renderGroupsTab();
-    });
-
-    wrapper.appendChild(header);
-    wrapper.appendChild(body);
-    groupsList.appendChild(wrapper);
+    groupsList.appendChild(createGroupCardNode(group, selectedGroups.includes(group.id)));
   });
 }
 
-// ── Obtener el conjunto base de palabras según el modo activo ──
+// ── Selección de conjunto base / palabra aleatoria ─────
 function getBaseWordSet() {
   const customToggle = document.getElementById('customModeToggle');
   const isCustomActive = customToggle ? customToggle.checked : false;
-
   if (isCustomActive) {
     if (useGroupMode && selectedGroups.length > 0) {
       const groups = calculateGroups();
-      const activeWords = new Set(
-        groups.filter(g => selectedGroups.includes(g.id)).flatMap(g => g.words)
-      );
+      const activeWords = new Set(groups.filter(g => selectedGroups.includes(g.id)).flatMap(g => g.words));
       return words.filter(w => activeWords.has(w.word));
     }
     return words.filter(w => customWords.includes(w.word));
   }
   return words;
 }
-
-// ── Pick a random word using weighted probabilities ────
 function pickRandom() {
   if (words.length === 0) return null;
-
   const cycleToggle = document.getElementById('cycleModeToggle');
   const isCycleActive = cycleToggle ? cycleToggle.checked : false;
-
   let baseSet = getBaseWordSet();
-
-  if (baseSet.length === 0) {
-    // Lista personalizada vacía: avisar y no continuar
-    return null;
-  }
-
+  if (baseSet.length === 0) return null;
   let eligibleWords = [...baseSet];
-
   if (isCycleActive) {
-    // Filtrar las palabras que ya han sido completadas con éxito en el ciclo actual
     eligibleWords = eligibleWords.filter(w => !completedWords.includes(w.word));
-
-    // Si ya se completaron todas las palabras, se restablece el ciclo
     if (eligibleWords.length === 0) {
       completedWords = completedWords.filter(w => !baseSet.some(bw => bw.word === w));
       saveCompletedWords();
@@ -1131,56 +1216,32 @@ function pickRandom() {
       alert("Ciclo completado. Se han restablecido las palabras para iniciar un nuevo ciclo.");
     }
   } else {
-    // Si el ciclo está inactivo, aplicamos la memoria a corto plazo para evitar repeticiones prontas.
-    // Limitamos el búfer dinámicamente al 25% del total de palabras elegibles para no agotar las opciones en vocabularios cortos.
     const dynamicLimit = Math.min(RECENT_LIMIT, Math.floor(baseSet.length * 0.25));
     const recentSlice = recentlySeen.slice(-dynamicLimit);
-
     const filteredByRecent = eligibleWords.filter(w => !recentSlice.includes(w.word));
-    
-    // Solo aplicamos el filtro si nos queda un número viable de palabras para elegir
-    if (filteredByRecent.length > 3) {
-      eligibleWords = filteredByRecent;
-    }
+    if (filteredByRecent.length > 3) eligibleWords = filteredByRecent;
   }
-
-  // Excluir la palabra actual para evitar repeticiones consecutivas si hay más opciones
-  if (eligibleWords.length > 1) {
-    eligibleWords = eligibleWords.filter(w => w !== current);
-  }
-
+  if (eligibleWords.length > 1) eligibleWords = eligibleWords.filter(w => w !== current);
   if (eligibleWords.length === 0) return null;
   if (eligibleWords.length === 1) return eligibleWords[0];
-
-  // Calcular la suma total de los pesos de las palabras elegibles restantes
   const totalWeight = eligibleWords.reduce((sum, w) => sum + (w.weight || 1), 0);
-  
   let randomValue = Math.random() * totalWeight;
   let cumulativeSum = 0;
-  
   for (let i = 0; i < eligibleWords.length; i++) {
     cumulativeSum += (eligibleWords[i].weight || 1);
-    if (randomValue <= cumulativeSum) {
-      return eligibleWords[i];
-    }
+    if (randomValue <= cumulativeSum) return eligibleWords[i];
   }
-  
   return eligibleWords[eligibleWords.length - 1];
 }
-
 function reorderWordsList() {
   if (words.length <= 1) return;
-  
-  // Determinamos el número de elementos a mover (máximo 50 o el tamaño de la lista si es menor)
   const countToMove = Math.min(50, words.length);
-  
   const lastFifty = words.slice(-countToMove);
   const remaining = words.slice(0, words.length - countToMove);
-  
-  // Reestructuramos el array colocando los últimos elementos al principio
   words = [...lastFifty, ...remaining];
 }
 
+// ── UI init ─────────────────────────────────────────────
 function initUI() {
   document.getElementById('checkBtn').addEventListener('click', checkAnswer);
   document.getElementById('nextBtn').addEventListener('click', nextWord);
@@ -1188,28 +1249,22 @@ function initUI() {
   document.getElementById('openPanelBtn').addEventListener('click', openWeightsPanel);
   document.getElementById('addCurrentToCustomBtn').addEventListener('click', addCurrentToCustomList);
   document.getElementById('hintBtn').addEventListener('click', toggleHint);
-    document.getElementById('revealLetterBtn').addEventListener('click', () => {
+  document.getElementById('revealLetterBtn').addEventListener('click', () => {
     revealCount++;
     updateHintText();
   });
-
-  const cycleToggle = document.getElementById('cycleModeToggle');
-  cycleToggle.addEventListener('change', updateStats);
-
+  document.getElementById('cycleModeToggle').addEventListener('change', updateStats);
   const customToggle = document.getElementById('customModeToggle');
   customToggle.addEventListener('change', () => {
-    if (customToggle.checked) {
-      if (customWords.length === 0) {
-        alert('Tu lista personalizada está vacía. Añade palabras desde el panel de Pesos (⚙️) antes de activar este modo.');
-        customToggle.checked = false;
-        return;
-      }
+    if (customToggle.checked && customWords.length === 0) {
+      alert('Tu lista personalizada está vacía. Añade elementos desde el panel (⚙️) antes de activar este modo.');
+      customToggle.checked = false;
+      return;
     }
     applyModeAvailability();
     updateStats();
     nextWord();
   });
-
   const transInput = document.getElementById('translationInput');
   transInput.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -1223,7 +1278,6 @@ function initUI() {
     document.getElementById('wordDisplay').style.visibility =
       (toggle.checked && transInput.value.length > 0) ? 'hidden' : 'visible';
   });
-
   document.addEventListener('keydown', e => {
     if (e.key !== 'Enter') return;
     const feedback = document.getElementById('feedback');
@@ -1233,10 +1287,8 @@ function initUI() {
       nextWord();
     }
   });
-
   applyModeAvailability();
 }
-
 function toggleHint() {
   const hintBtn = document.getElementById('hintBtn');
   const hintContent = document.getElementById('hintContent');
@@ -1244,34 +1296,29 @@ function toggleHint() {
   hintContent.style.display = showing ? 'none' : 'block';
   hintBtn.textContent = showing ? hintBtn.dataset.showLabel : 'Ocultar pista 🙈';
 }
-
 function applyModeAvailability() {
   const cycleToggle = document.getElementById('cycleModeToggle');
   const cycleLabel = document.getElementById('cycleModeLabel');
   if (!cycleToggle || !cycleLabel) return;
-
   cycleToggle.disabled = false;
   cycleLabel.classList.remove('disabled');
 }
 
+// ── Flujo de palabra actual ─────────────────────────────
 function nextWord() {
   wordCountTrigger++;
   if (wordCountTrigger >= 10) {
     wordCountTrigger = 0;
     reorderWordsList();
   }
-
   current = pickRandom();
-
   if (!current) {
     showEmptyListState();
     return;
   }
-
   revealCount = 0;
   currentMode = pickModeFor(current);
   resetWordCard();
-
   if (currentMode === 'en-es') {
     currentSentence = null;
     renderEnEsMode(current);
@@ -1284,33 +1331,26 @@ function nextWord() {
   } else {
     currentSentence = renderSentenceMode(current);
   }
-
   rememberRecentWord(current.word);
   resetFeedbackUI();
   updateStats();
   focusTextInput();
 }
-
 function showEmptyListState() {
   document.getElementById('wordDisplay').textContent = '—';
   document.getElementById('wordImage').style.display = 'none';
   document.getElementById('wordHint').style.display = 'none';
-
   const descEl = document.getElementById('feedbackDesc');
-  descEl.textContent = 'Tu lista personalizada está vacía. Añade palabras desde el panel de Pesos (⚙️).';
+  descEl.textContent = 'Tu lista personalizada está vacía. Añade elementos desde el panel (⚙️).';
   descEl.style.display = 'block';
-
   document.getElementById('inputSection').style.display = 'none';
   document.getElementById('feedback').className = '';
 }
-
 function pickModeFor(word) {
   const availableModes = ['en-es', 'es-en'];
   if (word.image) availableModes.push('img-en');
-  // if (word.sentences && word.sentences.length > 0) availableModes.push('sentence');
   return availableModes[Math.floor(Math.random() * availableModes.length)];
 }
-
 function resetWordCard() {
   const wordDisplay = document.getElementById('wordDisplay');
   wordDisplay.style.visibility = 'visible';
@@ -1320,110 +1360,72 @@ function resetWordCard() {
   document.getElementById('wordHint').style.display = 'none';
   document.getElementById('hintContent').style.display = 'none';
 }
-
 function configureHint({ label, image = null, text = null }) {
   const hintBtn = document.getElementById('hintBtn');
   const hintImage = document.getElementById('hintImage');
   const hintText = document.getElementById('hintText');
-
   hintBtn.dataset.showLabel = label;
   hintBtn.textContent = label;
-
-  if (image) {
-    hintImage.src = image;
-    hintImage.style.display = 'block';
-  } else {
-    hintImage.style.display = 'none';
-  }
-
-  if (text) {
-    hintText.textContent = text;
-    hintText.style.display = 'block';
-  } else {
-    hintText.style.display = 'none';
-  }
-
+  if (image) { hintImage.src = image; hintImage.style.display = 'block'; }
+  else { hintImage.style.display = 'none'; }
+  if (text) { hintText.textContent = text; hintText.style.display = 'block'; }
+  else { hintText.style.display = 'none'; }
   document.getElementById('wordHint').style.display = 'block';
 }
-
 function renderEnEsMode(word) {
   document.getElementById('wordLabel').textContent = '¿Cómo se traduce?';
   document.getElementById('wordDisplay').textContent = word.word;
-  
   const hasPast = !!word.past;
-  
   document.getElementById('inputLabel').textContent = hasPast
     ? 'Traducciones al español y su pasado (separados por coma)'
     : 'Traducciones al español (separadas por coma)';
-
-  configureHint({
-    label: 'Ver pista 👁️',
-    image: word.image || null,
-    text: ""
-  });
+  configureHint({ label: 'Ver pista 👁️', image: word.image || null, text: "" });
   updateHintText();
 }
-
 function renderEsEnMode(word) {
   document.getElementById('wordLabel').textContent = '¿Cómo se dice en inglés?';
-
-  const translationsList = word.rawTranslations.join(', ');
-  document.getElementById('wordDisplay').textContent = translationsList;
+  document.getElementById('wordDisplay').textContent = word.rawTranslations.join(', ');
   document.getElementById('wordDisplay').style.fontSize = '1.3rem';
-
   const hasPast = !!word.past;
   document.getElementById('inputLabel').textContent = hasPast
     ? 'Palabra en inglés y su pasado (separados por coma)'
     : 'Palabra en inglés';
-
   configureHint({ label: 'Ver pista 👁️', text: "", image: word.image || null });
   updateHintText();
 }
-
 function renderImgEnMode(word) {
   document.getElementById('wordLabel').textContent = '¿Qué palabra representa esta imagen?';
-
   document.getElementById('wordDisplay').style.display = 'none';
   const wordImage = document.getElementById('wordImage');
   wordImage.src = word.image;
   wordImage.style.display = 'block';
-
   document.getElementById('inputLabel').textContent = 'Palabra en inglés';
   document.getElementById('translationInput').placeholder = 'Escribe la palabra en inglés y sus traducciones al español';
-
   configureHint({ label: 'Ver pista 👁️', text: "" });
   updateHintText();
 }
-
 function renderSentenceMode(word) {
   document.getElementById('revealLetterBtn').style.display = 'none';
-  
   document.getElementById('wordLabel').textContent = 'Completa el espacio en blanco de la oración';
   const sentence = word.sentences[Math.floor(Math.random() * word.sentences.length)];
   const wordDisplay = document.getElementById('wordDisplay');
   wordDisplay.textContent = sentence.sentence;
   wordDisplay.style.fontSize = '1.25rem';
-
   document.getElementById('inputLabel').textContent = 'Escribe la palabra que falta';
   document.getElementById('translationInput').placeholder = 'Escribe la respuesta aquí…';
-
   if (word.image) configureHint({ label: 'Ver imagen 👁️', image: word.image });
-
   return sentence;
 }
-
 function rememberRecentWord(word) {
   recentlySeen.push(word);
   const baseSet = getBaseWordSet();
   const dynamicLimit = Math.min(RECENT_LIMIT, Math.floor(baseSet.length * 0.25));
   if (recentlySeen.length > dynamicLimit) recentlySeen.shift();
 }
-
 function resetFeedbackUI() {
   const feedbackDescEl = document.getElementById('feedbackDesc');
   feedbackDescEl.style.display = 'none';
   feedbackDescEl.textContent = '';
-
   document.getElementById('feedbackTranslation').style.display = 'none';
   document.getElementById('feedbackTranslationText').textContent = '';
   document.getElementById('translationInput').value = '';
@@ -1433,51 +1435,36 @@ function resetFeedbackUI() {
   document.getElementById('streakBanner').className = 'streak-banner';
   document.getElementById('missingList').style.display = 'none';
 }
-
-// ── Focus text input helper ─────────────────────────────
 function focusTextInput() {
-  // Un retraso pequeño permite asegurar que el elemento esté renderizado y listo en WebView
   setTimeout(() => {
     const input = document.getElementById('translationInput');
-    if (input) {
-      input.focus();
-      input.select();
-    }
+    if (input) { input.focus(); input.select(); }
   }, 80);
 }
 
-// ── Modificar para permitir alternar el estado del botón ──
+// ── Mi lista: añadir/quitar palabra actual ─────────────
 function updateAddCurrentToCustomBtn() {
   const btn = document.getElementById('addCurrentToCustomBtn');
   if (!btn || !current) return;
-
   if (customWords.includes(current.word)) {
     btn.textContent = '➖ Quitar de mi lista';
-    btn.disabled = false;
-    btn.style.opacity = '1';
     btn.style.background = 'rgba(231, 76, 60, 0.15)';
     btn.style.color = 'var(--wrong)';
     btn.style.borderColor = 'rgba(231, 76, 60, 0.3)';
   } else {
     btn.textContent = '➕ Añadir a mi lista';
-    btn.disabled = false;
-    btn.style.opacity = '1';
     btn.style.background = '';
     btn.style.color = '';
     btn.style.borderColor = '';
   }
+  btn.disabled = false;
+  btn.style.opacity = '1';
 }
-
-// ── Modificar para añadir o quitar el elemento según corresponda ──
 function addCurrentToCustomList() {
   if (!current) return;
-
   if (customWords.includes(current.word)) {
-    // Si ya existe, se elimina
     customWords = customWords.filter(w => w !== current.word);
     saveCustomWords();
-
-    // Si el modo "Mi lista" está activo y la lista queda vacía, se desactiva
     const customToggle = document.getElementById('customModeToggle');
     if (customToggle && customToggle.checked && customWords.length === 0) {
       customToggle.checked = false;
@@ -1487,149 +1474,88 @@ function addCurrentToCustomList() {
       return;
     }
   } else {
-    // Si no existe, se añade
     customWords.push(current.word);
     saveCustomWords();
   }
-
   updateAddCurrentToCustomBtn();
 }
-
-// ── Skip ───────────────────────────────────────────────
 function skipWord() {
   streak = 0;
   updateStats();
   nextWord();
 }
 
-// ── Parse user input ───────────────────────────────────
+// ── Evaluación de respuestas ────────────────────────────
 function parseInput(raw) {
-  return removeAccents(raw.toLowerCase().trim())
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean);
+  return removeAccents(safeStr(raw).toLowerCase().trim()).split(',').map(s => s.trim()).filter(Boolean);
 }
-
-// ── Funciones auxiliares para comparación parcial y clasificación ──
 function getPrefixScore(expected, user) {
   let score = 0;
   for (let i = 0; i < Math.min(expected.length, user.length); i++) {
-    if (expected[i] === user[i]) {
-      score++;
-    } else {
-      break;
-    }
+    if (expected[i] === user[i]) score++; else break;
   }
   return score;
 }
-
-// ── Funciones auxiliares para comparación parcial ──
 function findBestPartialMatch(expected, userItems) {
   let bestMatch = "";
   let maxScore = 0;
-
   userItems.forEach(user => {
     const score = getPrefixScore(expected, user);
-    if (score > maxScore) {
-      maxScore = score;
-      bestMatch = user;
-    }
+    if (score > maxScore) { maxScore = score; bestMatch = user; }
   });
   return bestMatch;
 }
-
-function highlightPartial(expected, user) {
-  if (!user) return expected;
-  let html = "";
-  for (let i = 0; i < expected.length; i++) {
-    if (i < user.length && expected[i] === user[i]) {
-      html += `<b style="color: var(--correct); font-weight: bold;">${expected[i]}</b>`;
-    } else {
-      html += `<span style="opacity: 0.5;">${expected[i]}</span>`;
-    }
-  }
-  return html;
-}
-
-// ── Calcular el número de "competidores" para el cálculo de peso ──
-// En lugar de usar siempre el total del diccionario, usamos el número de
-// palabras actualmente elegibles para ser seleccionadas (mismo conjunto
-// que usa pickRandom), ya que son las que realmente compiten por el sorteo.
 function getReferenceWordCount() {
   const cycleToggle = document.getElementById('cycleModeToggle');
   const isCycleActive = cycleToggle ? cycleToggle.checked : false;
-
   let baseSet = getBaseWordSet();
   if (baseSet.length === 0) return Math.max(words.length, 1);
-
   let eligible = [...baseSet];
-
   if (isCycleActive) {
     eligible = eligible.filter(w => !completedWords.includes(w.word));
-    if (eligible.length === 0) {
-      eligible = [...baseSet];
-    }
+    if (eligible.length === 0) eligible = [...baseSet];
   }
-
-  // Aseguramos un mínimo de 1 para evitar divisiones entre cero
   return Math.max(eligible.length, 1);
 }
-
 function resolveWordAndPast(correctWord, correctPast, userItems) {
   let remainingItems = [];
   let pastAttempt = '';
-
   userItems.forEach(item => {
-    if (item.startsWith(PAST_PREFIX)) {
-      pastAttempt = item.replace(PAST_PREFIX, '').trim();
-    } else {
-      remainingItems.push(item);
-    }
+    if (item.startsWith(PAST_PREFIX)) pastAttempt = item.replace(PAST_PREFIX, '').trim();
+    else remainingItems.push(item);
   });
-
   let wordAttempt = '';
-
-  // Caso especial: infinitivo y pasado son idénticos
   if (correctPast && correctWord === correctPast && pastAttempt === '') {
-    // Con que el usuario haya escrito la palabra una vez es suficiente para ambos campos
     wordAttempt = remainingItems[0] || '';
     pastAttempt = remainingItems[0] || '';
     return { wordAttempt, pastAttempt };
   }
-
   if (correctPast && pastAttempt === '') {
-    let bestWordScore = -1, bestPastScore = -1;
-    let bestWordIdx = -1, bestPastIdx = -1;
-
+    let bestWordScore = -1, bestPastScore = -1, bestWordIdx = -1, bestPastIdx = -1;
     remainingItems.forEach((item, idx) => {
       const scoreWord = getPrefixScore(correctWord, item) + (item === correctWord ? 1000 : 0);
       const scorePast = getPrefixScore(correctPast, item) + (item === correctPast ? 1000 : 0);
       if (scoreWord > bestWordScore) { bestWordScore = scoreWord; bestWordIdx = idx; }
       if (scorePast > bestPastScore) { bestPastScore = scorePast; bestPastIdx = idx; }
     });
-
     if (bestWordIdx !== -1 && bestWordIdx === bestPastIdx) {
-      if (remainingItems[bestWordIdx] === correctWord)      wordAttempt = remainingItems[bestWordIdx];
+      if (remainingItems[bestWordIdx] === correctWord) wordAttempt = remainingItems[bestWordIdx];
       else if (remainingItems[bestWordIdx] === correctPast) pastAttempt = remainingItems[bestWordIdx];
-      else                                                  wordAttempt = remainingItems[bestWordIdx];
+      else wordAttempt = remainingItems[bestWordIdx];
     } else {
-      if (bestWordIdx !== -1)                                wordAttempt = remainingItems[bestWordIdx];
+      if (bestWordIdx !== -1) wordAttempt = remainingItems[bestWordIdx];
       if (bestPastIdx !== -1 && bestPastIdx !== bestWordIdx) pastAttempt = remainingItems[bestPastIdx];
     }
   } else {
     wordAttempt = remainingItems[0] || '';
   }
-
   return { wordAttempt, pastAttempt };
 }
-
 function checkAnswer() {
   if (!current) return;
   document.getElementById('wordDisplay').style.visibility = 'visible';
-
   const rawTrans = document.getElementById('translationInput').value;
   const userItems = parseInput(rawTrans);
-
   let evalResult;
   if (currentMode === 'en-es') {
     evalResult = evaluateEnEs(current, userItems);
@@ -1645,51 +1571,34 @@ function checkAnswer() {
     evalResult = evaluateSentence(currentSentence, userInputSingle);
     if (!evalResult.allCorrect) renderSentenceLeds(currentSentence, rawTrans);
   }
-
   applyAnswerResult(evalResult.allCorrect);
   updateStats();
   showFeedback(evalResult);
 }
-
-// ── Evaluadores por modo ──
 function evaluateEnEs(word, userItems) {
   let pastAttempt = '';
   let translationAttempts = [];
-
-  // 1. Check for explicit prefix first
   const explicitPastIdx = userItems.findIndex(item => item.startsWith(PAST_PREFIX));
-  
   if (explicitPastIdx !== -1) {
     pastAttempt = userItems[explicitPastIdx].replace(PAST_PREFIX, '').trim();
     translationAttempts = userItems.filter((_, idx) => idx !== explicitPastIdx);
   } else if (word.past) {
-    // 2. Implicit check: find the item most likely meant as the past tense
-    let bestPastScore = -1;
-    let bestPastIdx = -1;
-
+    let bestPastScore = -1, bestPastIdx = -1;
     userItems.forEach((item, idx) => {
-      // Calculate how close this item is to the expected English past tense
       const scorePast = getPrefixScore(word.past, item) + (item === word.past ? 1000 : 0);
-      
-      // Calculate how close this item is to any of the correct Spanish translations
       let bestTransScore = 0;
       word.translations.forEach(trans => {
         const scoreTrans = getPrefixScore(trans, item) + (item === trans ? 1000 : 0);
         if (scoreTrans > bestTransScore) bestTransScore = scoreTrans;
       });
-
-      // If the item is a stronger match for the past tense than any Spanish translation
       if (scorePast > bestTransScore && scorePast > bestPastScore) {
-        bestPastScore = scorePast;
-        bestPastIdx = idx;
+        bestPastScore = scorePast; bestPastIdx = idx;
       }
     });
-
     if (bestPastIdx !== -1) {
       pastAttempt = userItems[bestPastIdx];
       translationAttempts = userItems.filter((_, idx) => idx !== bestPastIdx);
     } else {
-      // Fallback: check for a perfect match to the past word
       const perfectPastIdx = userItems.findIndex(item => item === word.past);
       if (perfectPastIdx !== -1) {
         pastAttempt = userItems[perfectPastIdx];
@@ -1701,22 +1610,11 @@ function evaluateEnEs(word, userItems) {
   } else {
     translationAttempts = [...userItems];
   }
-
-  // 3. Evaluate results
   const missing = word.translations.filter(t => !translationAttempts.includes(t));
   const transOk = missing.length === 0;
   const pastOk = word.past ? (pastAttempt === word.past) : true;
-  const allCorrect = transOk && pastOk;
-
-  return { 
-    allCorrect, 
-    transOk, 
-    pastOk, 
-    pastAttempt, 
-    translationAttempts 
-  };
+  return { allCorrect: transOk && pastOk, transOk, pastOk, pastAttempt, translationAttempts };
 }
-
 function evaluateEsEn(word, userItems) {
   const correctWord = removeAccents(word.word.toLowerCase().trim());
   const { wordAttempt, pastAttempt } = resolveWordAndPast(correctWord, word.past, userItems);
@@ -1724,125 +1622,119 @@ function evaluateEsEn(word, userItems) {
   const pastOk = word.past ? (pastAttempt === word.past) : true;
   return { allCorrect: wordOk && pastOk, wordOk, pastOk, wordAttempt, pastAttempt };
 }
-
 function evaluateImgEn(word, userItems) {
   const correctWord = removeAccents(word.word.toLowerCase().trim());
   const expectedItems = [correctWord, ...word.translations];
   if (word.past) expectedItems.push(removeAccents(word.past.toLowerCase().trim()));
-
-  // Verificamos si cada item esperado está presente en el input del usuario
   const allCorrect = expectedItems.every(item => userItems.includes(item));
-  
-  return { 
-    allCorrect,
-    expectedItems, // Pasamos esto al renderizador
-    userItems      // Pasamos los items tal cual los escribió el usuario
-  };
+  return { allCorrect, expectedItems, userItems };
 }
-
 function evaluateSentence(sentence, userInputSingle) {
   return { allCorrect: userInputSingle === sentence.fill };
 }
 
-// ── Render de píldoras (LEDs) de feedback ──
-function renderLedPills(html) {
+// ── LED pills (clonadas desde <template>, sin innerHTML) ─
+function createLedPill(content, statusClass) {
+  const node = document.getElementById('tplLedPill').content.firstElementChild.cloneNode(true);
+  node.classList.add(statusClass);
+  if (typeof content === 'string') node.textContent = content;
+  else node.appendChild(content);
+  return node;
+}
+function buildHighlightFragment(expected, user) {
+  const frag = document.createDocumentFragment();
+  if (!user) { frag.appendChild(document.createTextNode(expected)); return frag; }
+  for (let i = 0; i < expected.length; i++) {
+    if (i < user.length && expected[i] === user[i]) {
+      const b = document.createElement('b');
+      b.style.cssText = 'color: var(--correct); font-weight: bold;';
+      b.textContent = expected[i];
+      frag.appendChild(b);
+    } else {
+      const span = document.createElement('span');
+      span.style.opacity = '0.5';
+      span.textContent = expected[i];
+      frag.appendChild(span);
+    }
+  }
+  return frag;
+}
+function buildPrefixedHighlightFragment(prefix, expected, user) {
+  const frag = document.createDocumentFragment();
+  frag.appendChild(document.createTextNode(prefix + ' '));
+  frag.appendChild(buildHighlightFragment(expected, user));
+  return frag;
+}
+function renderLedPills(pillNodes) {
   const missingEl = document.getElementById('missingList');
   const missingItems = document.getElementById('missingItems');
   missingEl.style.display = '';
-  missingItems.innerHTML = `<div class="missing-items-container">${html}</div>`;
+  missingItems.innerHTML = '';
+  const container = document.getElementById('tplMissingItemsContainer').content.firstElementChild.cloneNode(true);
+  pillNodes.forEach(p => container.appendChild(p));
+  missingItems.appendChild(container);
 }
-
 function renderEnEsLeds(word, userItems, { pastAttempt, translationAttempts }) {
   const expectedItems = [...word.translations];
   if (word.past) expectedItems.push(`${PAST_PREFIX} ${word.past}`);
-
-  // 1. Render green (correct) or orange (missing/partial) pills
-  const matchedHTML = expectedItems.map(item => {
-    const isMatch = item.startsWith(PAST_PREFIX)
-      ? pastAttempt === word.past
-      : translationAttempts.includes(item);
-
-    let label = item;
-    if (!isMatch) {
-      label = item.startsWith(PAST_PREFIX)
-        ? `${PAST_PREFIX} ${highlightPartial(word.past, pastAttempt)}`
-        : highlightPartial(item, findBestPartialMatch(item, translationAttempts));
+  const pills = [];
+  expectedItems.forEach(item => {
+    const isPastItem = item.startsWith(PAST_PREFIX);
+    const isMatch = isPastItem ? (pastAttempt === word.past) : translationAttempts.includes(item);
+    if (isMatch) {
+      pills.push(createLedPill(item, 'correct'));
+    } else if (isPastItem) {
+      pills.push(createLedPill(buildPrefixedHighlightFragment(PAST_PREFIX, word.past, pastAttempt), 'missing'));
+    } else {
+      pills.push(createLedPill(buildHighlightFragment(item, findBestPartialMatch(item, translationAttempts)), 'missing'));
     }
-    return `<span class="led-pill ${isMatch ? 'correct' : 'missing'}">${label}</span>`;
-  }).join('');
-
-  // 2. Render red (incorrect) pills for anything that is wrong
-  const incorrectHTML = userItems
-    .filter(item => {
-      const cleanItem = item.startsWith(PAST_PREFIX) ? item.replace(PAST_PREFIX, "").trim() : item;
-      
-      // If it is one of the correct Spanish translations, do not mark as incorrect
-      if (word.translations.includes(cleanItem)) return false;
-      
-      // If it matches the correct English past tense perfectly, do not mark as incorrect
-      if (word.past && cleanItem === word.past) return false;
-      
-      // Otherwise, it is an incorrect entry (render as red LED)
-      return true;
-    })
-    .map(item => `<span class="led-pill incorrect">${item}</span>`)
-    .join('');
-
-  renderLedPills(matchedHTML + incorrectHTML);
+  });
+  userItems.forEach(item => {
+    const cleanItem = item.startsWith(PAST_PREFIX) ? item.replace(PAST_PREFIX, '').trim() : item;
+    if (word.translations.includes(cleanItem)) return;
+    if (word.past && cleanItem === word.past) return;
+    pills.push(createLedPill(item, 'incorrect'));
+  });
+  renderLedPills(pills);
 }
-
-function renderImgEnLeds(word, userItems, { allCorrect, expectedItems }) {
-  // Items que faltaron por escribir
-  const matchedHTML = expectedItems.map(item => {
-    const isMatch = userItems.includes(item);
-    return `<span class="led-pill ${isMatch ? 'correct' : 'missing'}">${item}</span>`;
-  }).join('');
-
-  // Items que el usuario escribió pero que no existen en los esperados
-  const incorrectHTML = userItems
-    .filter(item => !expectedItems.includes(item))
-    .map(item => `<span class="led-pill incorrect">${item}</span>`)
-    .join('');
-
-  renderLedPills(matchedHTML + incorrectHTML);
+function renderImgEnLeds(word, userItems, { expectedItems }) {
+  const pills = [];
+  expectedItems.forEach(item => pills.push(createLedPill(item, userItems.includes(item) ? 'correct' : 'missing')));
+  userItems.filter(item => !expectedItems.includes(item)).forEach(item => pills.push(createLedPill(item, 'incorrect')));
+  renderLedPills(pills);
 }
-
 function renderEsEnLeds(word, userItems, { wordAttempt, pastAttempt, wordOk, pastOk }) {
   const correctWord = removeAccents(word.word.toLowerCase().trim());
   const expectedItems = [word.word];
   if (word.past) expectedItems.push(`${PAST_PREFIX} ${word.past}`);
-
-  const matchedHTML = expectedItems.map(item => {
+  const pills = [];
+  expectedItems.forEach(item => {
     const isPast = item.startsWith(PAST_PREFIX);
     const isMatch = isPast ? pastOk : wordOk;
-    let label = item;
-    if (!isMatch) {
-      label = isPast
-        ? `${PAST_PREFIX} ${highlightPartial(word.past, pastAttempt)}`
-        : highlightPartial(word.word, wordAttempt);
+    if (isMatch) {
+      pills.push(createLedPill(item, 'correct'));
+    } else if (isPast) {
+      pills.push(createLedPill(buildPrefixedHighlightFragment(PAST_PREFIX, word.past, pastAttempt), 'missing'));
+    } else {
+      pills.push(createLedPill(buildHighlightFragment(word.word, wordAttempt), 'missing'));
     }
-    return `<span class="led-pill ${isMatch ? 'correct' : 'missing'}">${label}</span>`;
-  }).join('');
-
-  const incorrectHTML = userItems
-    .filter(item => {
-      const cleanItem = item.startsWith(PAST_PREFIX) ? item.replace(PAST_PREFIX, '').trim() : item;
-      return cleanItem !== correctWord && (!word.past || cleanItem !== word.past);
-    })
-    .map(item => `<span class="led-pill incorrect">${item}</span>`)
-    .join('');
-
-  renderLedPills(matchedHTML + incorrectHTML);
+  });
+  userItems.forEach(item => {
+    const cleanItem = item.startsWith(PAST_PREFIX) ? item.replace(PAST_PREFIX, '').trim() : item;
+    if (cleanItem === correctWord) return;
+    if (word.past && cleanItem === word.past) return;
+    pills.push(createLedPill(item, 'incorrect'));
+  });
+  renderLedPills(pills);
 }
-
 function renderSentenceLeds(sentence, rawTrans) {
-  renderLedPills(`
-    <span class="led-pill missing">Esperado: ${sentence.fill}</span>
-    <span class="led-pill incorrect">Escribiste: ${rawTrans || 'nada'}</span>
-  `);
+  renderLedPills([
+    createLedPill(`Esperado: ${sentence.fill}`, 'missing'),
+    createLedPill(`Escribiste: ${rawTrans || 'nada'}`, 'incorrect')
+  ]);
 }
 
-// ── Streak / ciclo / pesos ──
+// ── Streak / ciclo / pesos ──────────────────────────────
 function applyAnswerResult(allCorrect) {
   if (allCorrect) {
     streak++;
@@ -1855,7 +1747,6 @@ function applyAnswerResult(allCorrect) {
     increaseWordWeight(current);
   }
 }
-
 function markCompletedIfCycleActive(word) {
   const cycleToggle = document.getElementById('cycleModeToggle');
   if (cycleToggle.checked && !completedWords.includes(word)) {
@@ -1863,125 +1754,73 @@ function markCompletedIfCycleActive(word) {
     saveCompletedWords();
   }
 }
-
 function increaseWordWeight(word) {
   const referenceWordsCount = getReferenceWordCount();
   const referenceOthers = Math.max(referenceWordsCount - 1, 1);
-
   if (!word.weight || word.weight <= 1) {
     const targetProbability = 0.20;
     word.weight = Math.ceil((targetProbability * referenceOthers) / (1 - targetProbability));
   } else {
-    const linearIncrement = Math.ceil(referenceWordsCount * 0.15);
-    word.weight += linearIncrement;
+    word.weight += Math.ceil(referenceWordsCount * 0.15);
   }
   syncWeightsWithStorage();
 }
 
-// ── UI de resultado ──
+// ── Feedback visual ──────────────────────────────────────
 function showFeedback(evalResult) {
   const { allCorrect } = evalResult;
-
   document.getElementById('inputSection').style.display = 'none';
   document.getElementById('feedback').className = 'visible';
   updateAddCurrentToCustomBtn();
-
   const descEl = document.getElementById('feedbackDesc');
-  if (current.description) {
-    descEl.textContent = current.description;
-    descEl.style.display = 'block';
-  } else {
-    descEl.style.display = 'none';
-  }
-
-  // LÓGICA PARA MOSTRAR LAS TRADUCCIONES EN MODOS DE IMAGEN / ORACIÓN
+  if (current.description) { descEl.textContent = current.description; descEl.style.display = 'block'; }
+  else { descEl.style.display = 'none'; }
   const transEl = document.getElementById('feedbackTranslation');
   const transTextEl = document.getElementById('feedbackTranslationText');
-
   if (currentMode === 'img-en') {
     const list = current.rawTranslations || current.translations;
     let html = `<strong>${current.word}</strong>: ${list.join(', ')}`;
-    if (current.past) {
-      const pastVal = current.rawPast || current.past;
-      html += ` <span style="color: var(--muted); font-size: 0.8rem; margin-left: 5px;">(Pasado: ${pastVal})</span>`;
-    }
+    if (current.past) html += ` <span style="color: var(--muted); font-size: 0.8rem; margin-left: 5px;">(Pasado: ${current.rawPast || current.past})</span>`;
     transTextEl.innerHTML = html;
     transEl.style.display = 'block';
   } else if (currentMode === 'es-en') {
     let html = `<strong>${current.word}</strong>`;
-    if (current.past) {
-      const pastVal = current.rawPast || current.past;
-      html += ` — Pasado: <strong>${pastVal}</strong>`;
-    }
+    if (current.past) html += ` — Pasado: <strong>${current.rawPast || current.past}</strong>`;
     transTextEl.innerHTML = html;
     transEl.style.display = 'block';
   } else {
     transEl.style.display = 'none';
   }
-
   const title = document.getElementById('feedbackTitle');
-
   if (allCorrect) {
     title.textContent = '¡Correcto!';
     title.className = 'feedback-title correct';
     document.getElementById('awardWrap').className = 'award-wrap show';
     document.getElementById('awardText').textContent = '¡Respuesta perfecta!';
     launchConfetti();
-
     if (streak >= 3) {
       document.getElementById('streakBanner').className = 'streak-banner show';
       document.getElementById('streakNum').textContent = streak;
     }
   } else {
-    const isBaseOk = (currentMode === 'en-es' && evalResult.transOk) ||
-                      (currentMode === 'img-en' && evalResult.wordOk);
+    const isBaseOk = (currentMode === 'en-es' && evalResult.transOk) || (currentMode === 'img-en' && evalResult.wordOk);
     title.textContent = isBaseOk ? 'Casi… faltó el pasado' : 'Revisa tus respuestas';
     title.className = 'feedback-title wrong';
-
     const wordCard = document.getElementById('wordCard');
     wordCard.classList.add('shake');
     setTimeout(() => wordCard.classList.remove('shake'), 450);
   }
 }
 
-// ── Persistencia de Pesos en LocalStorage ────────────────
-const WEIGHTS_STORAGE_KEY = 'englishup_word_weights';
-
-function loadSavedWeights() {
-  const saved = localStorage.getItem(WEIGHTS_STORAGE_KEY);
-  if (saved) {
-    try {
-      return JSON.parse(saved);
-    } catch (e) {
-      return {};
-    }
-  }
-  return {};
-}
-
-function syncWeightsWithStorage() {
-  const savedWeights = loadSavedWeights();
-  
-  // Guardar o actualizar únicamente los pesos de las palabras cargadas
-  words.forEach(w => {
-    savedWeights[w.word] = w.weight;
-  });
-  
-  localStorage.setItem(WEIGHTS_STORAGE_KEY, JSON.stringify(savedWeights));
-}
-
-// ── Stats ──────────────────────────────────────────────
+// ── Stats & confetti ─────────────────────────────────────
 function updateStats() {
   document.getElementById('streakCount').textContent = streak;
 }
-
-// ── Confetti ───────────────────────────────────────────
 function launchConfetti() {
   const canvas = document.getElementById('confetti');
-  const ctx    = canvas.getContext('2d');
-  canvas.width  = window.innerWidth;
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-
   const pieces = Array.from({length: 80}, () => ({
     x: Math.random() * canvas.width,
     y: Math.random() * -canvas.height * 0.5,
@@ -1992,7 +1831,6 @@ function launchConfetti() {
     tiltAngle: 0,
     tiltSpeed: Math.random() * 0.1 + 0.05
   }));
-
   let frame = 0;
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -2015,111 +1853,110 @@ function launchConfetti() {
   draw();
 }
 
-// ── Funciones para el Panel de Pesos / Diccionario Personalizado ────────
-function openWeightsPanel() {
-  const modal = document.getElementById('weightsModal');
-
-  // Actualizar el total de palabras en el panel
+// ── Panel: contadores y utilidades comunes ──────────────
+function updatePanelWordCount() {
   const countEl = document.getElementById('panelWordCount');
-  if (countEl) {
-    countEl.textContent = `Total: ${words.length} palabras`;
-  }
-
-  const customCountTab = document.getElementById('customCountTab');
-  if (customCountTab) {
-    customCountTab.textContent = customWords.length;
-  }
-
-  renderPanelList();
-  modal.classList.add('active');
+  if (!countEl) return;
+  const wordCount = words.filter(w => w.type !== 'phrasal_verb').length;
+  const phrasalCount = words.filter(w => w.type === 'phrasal_verb').length;
+  countEl.textContent = `Total: ${words.length} elementos (${wordCount} palabras, ${phrasalCount} phrasal verbs)`;
+}
+function updateCustomCountTab() {
+  const el = document.getElementById('customCountTab');
+  if (el) el.textContent = customWords.length;
+}
+function createEmptyStateNode(text) {
+  const node = document.getElementById('tplPanelEmpty').content.firstElementChild.cloneNode(true);
+  node.textContent = text;
+  return node;
 }
 
-// function switchPanelTab(tab) {
-//   panelTab = tab;
-
-//   document.getElementById('tabAll').classList.toggle('active', tab === 'all');
-//   document.getElementById('tabCustom').classList.toggle('active', tab === 'custom');
-
-//   document.getElementById('panelActionsAll').style.display = (tab === 'all') ? '' : 'none';
-//   document.getElementById('panelActionsCustom').style.display = (tab === 'custom') ? '' : 'none';
-
-//   renderPanelList();
-// }
-
+// ── Panel: lista (pestañas Todas / Mi lista) con separación
+//    entre palabras y phrasal verbs dentro de "Todas" ────
+function createPanelItemNode(w, savedWeights) {
+  const node = document.getElementById('tplPanelItem').content.firstElementChild.cloneNode(true);
+  const weight = savedWeights[w.word] !== undefined ? savedWeights[w.word] : 1;
+  const isCustom = customWords.includes(w.word);
+  node.classList.toggle('is-custom', isCustom);
+  node.querySelector('.word-name').textContent = w.word;
+  const badge = node.querySelector('.type-badge');
+  const isPhrasal = w.type === 'phrasal_verb';
+  badge.textContent = isPhrasal ? 'PV' : 'W';
+  badge.style.cssText = isPhrasal
+    ? 'font-size:0.65rem; padding:1px 6px; border-radius:6px; background:rgba(233,69,96,0.15); color:var(--accent); margin-left:6px;'
+    : 'font-size:0.65rem; padding:1px 6px; border-radius:6px; background:rgba(15,155,142,0.15); color:var(--teal); margin-left:6px;';
+  const weightEl = node.querySelector('.word-weight');
+  weightEl.textContent = `x${weight}`;
+  weightEl.style.color = weight > 1 ? 'var(--accent)' : '';
+  const addBtn = node.querySelector('[data-action="add-custom"]');
+  const removeBtn = node.querySelector('[data-action="remove-custom"]');
+  addBtn.style.display = isCustom ? 'none' : '';
+  removeBtn.style.display = isCustom ? '' : 'none';
+  addBtn.dataset.word = w.word;
+  removeBtn.dataset.word = w.word;
+  return node;
+}
+function createSectionHeaderNode(title, count) {
+  const node = document.getElementById('tplPanelSectionHeader').content.firstElementChild.cloneNode(true);
+  node.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:8px 4px 4px; margin-top:6px; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); border-bottom:1px solid #ffffff0a;';
+  node.querySelector('.section-title').textContent = title;
+  node.querySelector('.section-count').textContent = count;
+  return node;
+}
+function sortByWeightDesc(list, savedWeights) {
+  return [...list].sort((a, b) => {
+    const wa = savedWeights[a.word] !== undefined ? savedWeights[a.word] : 1;
+    const wb = savedWeights[b.word] !== undefined ? savedWeights[b.word] : 1;
+    return wb - wa;
+  });
+}
 function renderPanelList() {
   const listContainer = document.getElementById('panelList');
   listContainer.innerHTML = '';
-
   const savedWeights = loadSavedWeights();
-
-  let listToRender;
   if (panelTab === 'custom') {
-    listToRender = words.filter(w => customWords.includes(w.word));
+    const list = sortByWeightDesc(words.filter(w => customWords.includes(w.word)), savedWeights);
+    if (list.length === 0) {
+      listContainer.appendChild(createEmptyStateNode('Tu lista personalizada está vacía. Pulsa ➕ en cualquier elemento de "Todas" para añadirlo.'));
+    } else {
+      list.forEach(w => listContainer.appendChild(createPanelItemNode(w, savedWeights)));
+    }
   } else {
-    listToRender = [...words];
-  }
-
-  // Ordenar palabras por peso (las de mayor peso al principio)
-  const sortedWords = [...listToRender].sort((a, b) => {
-    const weightA = savedWeights[a.word] !== undefined ? savedWeights[a.word] : 1;
-    const weightB = savedWeights[b.word] !== undefined ? savedWeights[b.word] : 1;
-    return weightB - weightA;
-  });
-
-  if (sortedWords.length === 0) {
-    const empty = document.createElement('div');
-    empty.className = 'panel-empty';
-    empty.textContent = (panelTab === 'custom')
-      ? 'Tu lista personalizada está vacía. Pulsa ➕ en cualquier palabra de "Todas" para añadirla.'
-      : 'No hay palabras.';
-    listContainer.appendChild(empty);
-    return;
-  }
-
-  sortedWords.forEach(w => {
-    const weight = savedWeights[w.word] !== undefined ? savedWeights[w.word] : 1;
-    const isCustom = customWords.includes(w.word);
-
-    const item = document.createElement('div');
-    item.className = `panel-item ${isCustom ? 'is-custom' : ''}`;
-
-    const toggleBtn = isCustom
-      ? `<button class="icon-btn remove" data-word="${w.word}" data-action="remove-custom" title="Quitar de mi lista">✖</button>`
-      : `<button class="icon-btn add" data-word="${w.word}" data-action="add-custom" title="Añadir a mi lista">➕</button>`;
-
-    item.innerHTML = `
-      <span class="word-name">${w.word}</span>
-      <span class="word-weight" style="${weight > 1 ? 'color: var(--accent);' : ''}">x${weight}</span>
-      <div class="item-actions">${toggleBtn}</div>
-    `;
-    listContainer.appendChild(item);
-  });
-
-  // Asignar listeners a los botones de añadir/quitar
-  listContainer.querySelectorAll('[data-action="add-custom"]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const word = btn.getAttribute('data-word');
-      if (!customWords.includes(word)) {
-        customWords.push(word);
-        saveCustomWords();
+    const wordEntries = sortByWeightDesc(words.filter(w => w.type !== 'phrasal_verb'), savedWeights);
+    const phrasalEntries = sortByWeightDesc(words.filter(w => w.type === 'phrasal_verb'), savedWeights);
+    if (wordEntries.length === 0 && phrasalEntries.length === 0) {
+      listContainer.appendChild(createEmptyStateNode('No hay elementos.'));
+    } else {
+      if (wordEntries.length > 0) {
+        listContainer.appendChild(createSectionHeaderNode('Palabras', wordEntries.length));
+        wordEntries.forEach(w => listContainer.appendChild(createPanelItemNode(w, savedWeights)));
       }
-      const customCountTab = document.getElementById('customCountTab');
-      if (customCountTab) customCountTab.textContent = customWords.length;
-      renderPanelList();
-    });
-  });
-
-  listContainer.querySelectorAll('[data-action="remove-custom"]').forEach(btn => {
+      if (phrasalEntries.length > 0) {
+        listContainer.appendChild(createSectionHeaderNode('Phrasal Verbs', phrasalEntries.length));
+        phrasalEntries.forEach(w => listContainer.appendChild(createPanelItemNode(w, savedWeights)));
+      }
+    }
+  }
+  attachPanelItemListeners(listContainer);
+}
+function attachPanelItemListeners(container) {
+  container.querySelectorAll('[data-action="add-custom"]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const word = btn.getAttribute('data-word');
-      customWords = customWords.filter(w => w !== word);
-      saveCustomWords();
-      const customCountTab = document.getElementById('customCountTab');
-      if (customCountTab) customCountTab.textContent = customWords.length;
+      const word = btn.dataset.word;
+      if (!customWords.includes(word)) { customWords.push(word); saveCustomWords(); }
+      updateCustomCountTab();
       renderPanelList();
       renderGroupsTab();
-
-      // Si la lista personalizada queda vacía y el modo está activo, desactivarlo
+    });
+  });
+  container.querySelectorAll('[data-action="remove-custom"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const word = btn.dataset.word;
+      customWords = customWords.filter(w => w !== word);
+      saveCustomWords();
+      updateCustomCountTab();
+      renderPanelList();
+      renderGroupsTab();
       const customToggle = document.getElementById('customModeToggle');
       if (customToggle && customToggle.checked && customWords.length === 0) {
         customToggle.checked = false;
@@ -2131,196 +1968,178 @@ function renderPanelList() {
   });
 }
 
+// ── Panel: apertura / cierre / pestañas ─────────────────
+function openWeightsPanel() {
+  updatePanelWordCount();
+  updateCustomCountTab();
+  renderPanelList();
+  document.getElementById('weightsModal').classList.add('active');
+}
 function closeWeightsPanel() {
   document.getElementById('weightsModal').classList.remove('active');
 }
-
+function switchPanelTab(tab) {
+  panelTab = tab;
+  document.getElementById('tabAll').classList.toggle('active', tab === 'all');
+  document.getElementById('tabCustom').classList.toggle('active', tab === 'custom');
+  document.getElementById('tabConfig').classList.toggle('active', tab === 'config');
+  document.getElementById('tabGroups').classList.toggle('active', tab === 'groups');
+  const isConfig = (tab === 'config');
+  const isGroups = (tab === 'groups');
+  const isList = !isConfig && !isGroups;
+  document.getElementById('panelList').style.display = isList ? 'flex' : 'none';
+  document.getElementById('panelConfig').style.display = isConfig ? 'flex' : 'none';
+  document.getElementById('panelGroups').style.display = isGroups ? 'flex' : 'none';
+  document.getElementById('panelActionsAll').style.display = (tab === 'all') ? '' : 'none';
+  document.getElementById('panelActionsCustom').style.display = (tab === 'custom') ? '' : 'none';
+  document.getElementById('panelActionsGroups').style.display = (tab === 'groups') ? '' : 'none';
+  if (isList) renderPanelList();
+  if (isGroups) renderGroupsTab();
+}
 function resetAllWeights() {
-  if (confirm('¿Deseas restablecer todos los pesos a 1?')) {
-    localStorage.removeItem(WEIGHTS_STORAGE_KEY);
-    words.forEach(w => {
-      w.weight = 1;
-    });
-    syncWeightsWithStorage();
-    closeWeightsPanel();
-  }
+  if (!confirm('¿Deseas restablecer todos los pesos a 1?')) return;
+  localStorage.removeItem(WEIGHTS_STORAGE_KEY);
+  words.forEach(w => { w.weight = 1; });
+  syncWeightsWithStorage();
+  renderPanelList();
 }
-
 function clearCustomList() {
-  if (confirm('¿Deseas vaciar tu lista personalizada?')) {
-    customWords = [];
-    saveCustomWords();
-
-    const customToggle = document.getElementById('customModeToggle');
-    if (customToggle && customToggle.checked) {
-      customToggle.checked = false;
-      applyModeAvailability();
-      updateStats();
-      nextWord();
-    }
-
-    const customCountTab = document.getElementById('customCountTab');
-    if (customCountTab) customCountTab.textContent = customWords.length;
-    renderPanelList();
-    renderGroupsTab();
+  if (!confirm('¿Deseas vaciar tu lista personalizada?')) return;
+  customWords = [];
+  saveCustomWords();
+  const customToggle = document.getElementById('customModeToggle');
+  if (customToggle && customToggle.checked) {
+    customToggle.checked = false;
+    applyModeAvailability();
+    updateStats();
+    nextWord();
   }
+  updateCustomCountTab();
+  renderPanelList();
+  renderGroupsTab();
 }
 
-function exportCustomListJSON() {
-  if (customWords.length === 0) {
-    alert("La lista personalizada está vacía.");
-    return;
+// ── Exportación local ────────────────────────────────────
+function toCleanBaseItem(w) {
+  const keyName = w.type === 'phrasal_verb' ? 'phrasal_verb' : 'word';
+  const item = {
+    [keyName]: w.word,
+    translations: w.rawTranslations || w.translations,
+    description: w.description || "",
+    past: w.rawPast || w.past || null,
+  };
+  if (w.image) item.image = w.image;
+  if (w.sentences && w.sentences.length > 0) {
+    item.sentences = w.sentences.map(s => ({ sentence: s.sentence, fill: s.fill }));
   }
-  
-  // Obtener los objetos completos de las palabras filtradas
-  const dataToExport = words.filter(w => customWords.includes(w.word));
-  
-  // Crear un blob con el contenido JSON
+  return item;
+}
+function exportCustomListJSON() {
+  if (customWords.length === 0) { alert("La lista personalizada está vacía."); return; }
+  const dataToExport = words
+    .filter(w => customWords.includes(w.word))
+    .map(w => ({ ...toCleanBaseItem(w), custom_list: true }));
   const dataStr = JSON.stringify(dataToExport, null, 2);
   const blob = new Blob([dataStr], { type: "application/json" });
   const url = URL.createObjectURL(blob);
-  
-  // Crear un enlace temporal para forzar la descarga
   const a = document.createElement("a");
   a.href = url;
   a.download = "mi_lista_englishup.json";
   document.body.appendChild(a);
   a.click();
-  
-  // Limpieza
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
 
+// ── Sincronización con GitHub: words.json + phrasal_verbs.json ─
+async function fetchGitHubFile(url, headers) {
+  const res = await fetch(url, { headers });
+  if (!res.ok) throw new Error(`No se pudo verificar la versión en el servidor (${url}). Código: ${res.status}`);
+  const fileData = await res.json();
+  const rawBytes = Uint8Array.from(atob(fileData.content.replace(/\n/g, '')), c => c.charCodeAt(0));
+  const parsed = JSON.parse(new TextDecoder().decode(rawBytes));
+  return { sha: fileData.sha, data: parsed };
+}
+function toBase64(jsonString) {
+  const utf8Bytes = new TextEncoder().encode(jsonString);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let i = 0; i < utf8Bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...utf8Bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+async function putGitHubFile(url, headers, message, base64Content, sha) {
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, content: base64Content, sha })
+  });
+  if (!res.ok) {
+    const errorDetails = await res.json();
+    throw new Error(errorDetails.message || 'Error en la subida.');
+  }
+}
+function buildExportEntry(localWord, serverEntry, keyName, termValue, syncCustomList) {
+  const base = localWord ? toCleanBaseItem(localWord) : { ...serverEntry };
+  base[keyName] = termValue;
+  if (syncCustomList) {
+    if (customWords.includes(termValue)) {
+      base.custom_list = true;
+      base.group = getWordGroup(termValue);
+    } else {
+      delete base.custom_list;
+      delete base.group;
+    }
+  } else {
+    if (serverEntry && serverEntry.custom_list !== undefined) base.custom_list = serverEntry.custom_list;
+    if (serverEntry && serverEntry.group !== undefined) base.group = serverEntry.group;
+  }
+  return base;
+}
+function buildExportDataset(serverList, localList, keyName, syncCustomList) {
+  const localMap = {};
+  localList.forEach(w => { localMap[w.word] = w; });
+  const serverTerms = new Set(serverList.map(sw => sw[keyName]));
+  const exportData = serverList.map(sw => buildExportEntry(localMap[sw[keyName]] || null, sw, keyName, sw[keyName], syncCustomList));
+  localList.filter(w => !serverTerms.has(w.word)).forEach(w => {
+    exportData.push(buildExportEntry(w, null, keyName, w.word, syncCustomList));
+  });
+  return exportData;
+}
 async function pushToGitHub() {
   const token = document.getElementById('githubToken').value.trim();
   const owner = document.getElementById('githubUser').value.trim();
-  const repo  = document.getElementById('githubRepo').value.trim();
-  const path  = 'words.json';
-
+  const repo = document.getElementById('githubRepo').value.trim();
   if (!token || !owner || !repo) {
     alert('Debe rellenar el Token, Usuario y Repositorio para subir cambios.');
     return;
   }
-
   const syncCustomList = confirm(
     '¿Deseas sincronizar tu lista personalizada local con el servidor?\n\n' +
     'Pulsa "Aceptar" para enviar tu lista local.\n' +
     'Pulsa "Cancelar" para conservar los valores custom_list y group del servidor sin cambios.'
   );
-
   const btn = document.getElementById('pushToGithubBtn');
   const originalText = btn.textContent;
   btn.textContent = 'Subiendo... ⏳';
   btn.disabled = true;
-
   try {
-    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
-    const headers = {
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/vnd.github.v3+json'
-    };
+    const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' };
+    const wordsUrl = `https://api.github.com/repos/${owner}/${repo}/contents/words.json`;
+    const phrasalsUrl = `https://api.github.com/repos/${owner}/${repo}/contents/phrasal_verbs.json`;
 
-    const getResponse = await fetch(url, { headers });
-    if (!getResponse.ok) throw new Error(`No se pudo verificar la versión en el servidor. Código: ${getResponse.status}`);
-    const fileData = await getResponse.json();
-    const currentSha = fileData.sha;
+    const localWordsOnly = words.filter(w => w.type !== 'phrasal_verb');
+    const localPhrasalsOnly = words.filter(w => w.type === 'phrasal_verb');
 
-    // Decode current server words to serve as the structural template (preserving original order)
-    const rawBytes = Uint8Array.from(atob(fileData.content.replace(/\n/g, '')), c => c.charCodeAt(0));
-    const serverWords = JSON.parse(new TextDecoder().decode(rawBytes));
+    const { sha: wordsSha, data: serverWords } = await fetchGitHubFile(wordsUrl, headers);
+    const { sha: phrasalsSha, data: serverPhrasals } = await fetchGitHubFile(phrasalsUrl, headers);
 
-    // Map local words by key for easy lookup of modified values
-    const localWordMap = {};
-    words.forEach(w => {
-      localWordMap[w.word] = w;
-    });
+    const wordsExport = buildExportDataset(serverWords, localWordsOnly, 'word', syncCustomList);
+    const phrasalsExport = buildExportDataset(serverPhrasals, localPhrasalsOnly, 'phrasal_verb', syncCustomList);
 
-    const serverWordSet = new Set(serverWords.map(sw => sw.word));
-
-    // Map existing server words first to maintain their exact original positions
-    const sortedExportData = serverWords.map(sw => {
-      const w = localWordMap[sw.word] || sw;
-
-      const cleanItem = {
-        word: sw.word,
-        translations: w.rawTranslations || w.translations,
-        description: w.description || "",
-        past: w.rawPast || w.past || null,
-      };
-
-      if (w.image) cleanItem.image = w.image;
-
-      if (syncCustomList) {
-        if (customWords.includes(sw.word)) {
-          cleanItem.custom_list = true;
-          cleanItem.group = getWordGroup(sw.word);
-        }
-      } else {
-        if (sw.custom_list) cleanItem.custom_list = sw.custom_list;
-        if (sw.group !== undefined) cleanItem.group = sw.group;
-      }
-
-      if (w.sentences && w.sentences.length > 0) {
-        cleanItem.sentences = w.sentences.map(s => ({
-          sentence: s.sentence,
-          fill: s.fill
-        }));
-      }
-
-      return cleanItem;
-    });
-
-    // Append any entirely new local words that are not yet present on the server
-    const newLocalWords = words.filter(w => !serverWordSet.has(w.word));
-    newLocalWords.forEach(w => {
-      const cleanItem = {
-        word: w.word,
-        translations: w.rawTranslations || w.translations,
-        description: w.description || "",
-        past: w.rawPast || w.past || null,
-      };
-
-      if (w.image) cleanItem.image = w.image;
-
-      if (syncCustomList && customWords.includes(w.word)) {
-        cleanItem.custom_list = true;
-        cleanItem.group = getWordGroup(w.word);
-      }
-
-      if (w.sentences && w.sentences.length > 0) {
-        cleanItem.sentences = w.sentences.map(s => ({
-          sentence: s.sentence,
-          fill: s.fill
-        }));
-      }
-
-      sortedExportData.push(cleanItem);
-    });
-
-    const jsonString = JSON.stringify(sortedExportData, null, 1);
-    const utf8Bytes  = new TextEncoder().encode(jsonString);
-    let binary = '';
-    const chunkSize = 0x8000;
-    for (let i = 0; i < utf8Bytes.length; i += chunkSize) {
-      binary += String.fromCharCode(...utf8Bytes.subarray(i, i + chunkSize));
-    }
-    const base64Content = btoa(binary);
-
-    const putResponse = await fetch(url, {
-      method: 'PUT',
-      headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: 'Sync words.json',
-        content: base64Content,
-        sha: currentSha
-      })
-    });
-
-    if (!putResponse.ok) {
-      const errorDetails = await putResponse.json();
-      throw new Error(errorDetails.message || 'Error en la subida.');
-    }
+    await putGitHubFile(wordsUrl, headers, 'Sync words.json', toBase64(JSON.stringify(wordsExport, null, 1)), wordsSha);
+    await putGitHubFile(phrasalsUrl, headers, 'Sync phrasal_verbs.json', toBase64(JSON.stringify(phrasalsExport, null, 1)), phrasalsSha);
 
     alert('¡Cambios guardados en GitHub correctamente!');
   } catch (error) {
@@ -2332,41 +2151,16 @@ async function pushToGitHub() {
   }
 }
 
-function switchPanelTab(tab) {
-  panelTab = tab;
-
-  document.getElementById('tabAll').classList.toggle('active', tab === 'all');
-  document.getElementById('tabCustom').classList.toggle('active', tab === 'custom');
-  document.getElementById('tabConfig').classList.toggle('active', tab === 'config');
-  document.getElementById('tabGroups').classList.toggle('active', tab === 'groups');
-
-  const isConfig  = (tab === 'config');
-  const isGroups  = (tab === 'groups');
-  const isList    = !isConfig && !isGroups;
-
-  document.getElementById('panelList').style.display   = isList   ? 'flex' : 'none';
-  document.getElementById('panelConfig').style.display = isConfig ? 'flex' : 'none';
-  document.getElementById('panelGroups').style.display = isGroups ? 'flex' : 'none';
-
-  document.getElementById('panelActionsAll').style.display    = (tab === 'all')    ? '' : 'none';
-  document.getElementById('panelActionsCustom').style.display = (tab === 'custom') ? '' : 'none';
-  document.getElementById('panelActionsGroups').style.display = (tab === 'groups') ? '' : 'none';
-
-  if (isList)    renderPanelList();
-  if (isGroups)  renderGroupsTab();
-}
-
-// Asignar listeners globales para cerrar, reiniciar pesos, pestañas y limpiar lista
+// ── Listeners globales del panel ────────────────────────
 document.getElementById('closePanelBtn').addEventListener('click', closeWeightsPanel);
 document.getElementById('resetWeightsBtn').addEventListener('click', resetAllWeights);
 document.getElementById('clearCustomBtn').addEventListener('click', clearCustomList);
 document.getElementById('tabAll').addEventListener('click', () => switchPanelTab('all'));
 document.getElementById('tabCustom').addEventListener('click', () => switchPanelTab('custom'));
-document.getElementById('exportCustomBtn').addEventListener('click', exportCustomListJSON);
-document.getElementById('loadCustomFromJsonBtn').addEventListener('click', handleLoadCustomFromJSON);
-document.getElementById('exportCustomBtn').addEventListener('click', exportCustomListJSON);
 document.getElementById('tabConfig').addEventListener('click', () => switchPanelTab('config'));
 document.getElementById('tabGroups').addEventListener('click', () => switchPanelTab('groups'));
+document.getElementById('exportCustomBtn').addEventListener('click', exportCustomListJSON);
+document.getElementById('loadCustomFromJsonBtn').addEventListener('click', handleLoadCustomFromJSON);
 document.getElementById('applyGroupSizeBtn').addEventListener('click', () => {
   const val = parseInt(document.getElementById('groupSizeInput').value, 10);
   if (isNaN(val) || val < 1) { alert('Introduce un número válido.'); return; }
@@ -2394,17 +2188,18 @@ document.getElementById('clearGroupSelectionBtn').addEventListener('click', () =
   localStorage.setItem('use_group_mode', 'false');
   renderGroupsTab();
 });
-// Github
+
+// ── GitHub credentials persistence ──────────────────────
 document.getElementById('githubToken').value = localStorage.getItem('sync_gh_token') || '';
 document.getElementById('githubUser').value = localStorage.getItem('sync_gh_user') || '';
 document.getElementById('githubRepo').value = localStorage.getItem('sync_gh_repo') || '';
-document.getElementById('githubToken').addEventListener('input', (e) => localStorage.setItem('sync_gh_token', e.target.value));
-document.getElementById('githubUser').addEventListener('input', (e) => localStorage.setItem('sync_gh_user', e.target.value));
-document.getElementById('githubRepo').addEventListener('input', (e) => localStorage.setItem('sync_gh_repo', e.target.value));
+document.getElementById('githubToken').addEventListener('input', e => localStorage.setItem('sync_gh_token', e.target.value));
+document.getElementById('githubUser').addEventListener('input', e => localStorage.setItem('sync_gh_user', e.target.value));
+document.getElementById('githubRepo').addEventListener('input', e => localStorage.setItem('sync_gh_repo', e.target.value));
 document.getElementById('syncMainBtn').addEventListener('click', handleSyncWords);
 document.getElementById('pushToGithubBtn').addEventListener('click', pushToGitHub);
 
-// ── Boot ───────────────────────────────────────────────
+// ── Boot ─────────────────────────────────────────────────
 initUI();
 loadWords();
 </script>

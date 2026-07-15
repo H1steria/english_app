@@ -1,6 +1,7 @@
 *
 
 !index.html
+!phrasal_verbs.json
 !words.json
 !README.md
 !.gitignore
@@ -10,6 +11,6 @@
 !utils/compilar app.txt
 !utils/english.drawio
 !utils/execute.txt
-!utils/find_diplicated_words.py
+!utils/extract_all_words.py
 !utils/tiempos.txt
 !utils/update_custom_list.py

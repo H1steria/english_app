@@ -11,4 +11,4 @@ npx cap open android
 
 actualizar app:
 npx cap copy
-compilar de nuevo.
+compilar de nuevo con android studio.
