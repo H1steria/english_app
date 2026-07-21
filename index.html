@@ -514,6 +514,7 @@
   <div class="word-card" id="wordCard">
     <div class="word-label" id="wordLabel">¿Cómo se traduce?</div>
     <div class="word-english" id="wordDisplay">—</div>
+    <div id="wordSynonymDesc" style="display:none; font-size:0.8rem; font-style:italic; color:var(--gold); margin-top:4px; line-height:1.3;"></div>
     <img id="wordImage" class="responsive-image" alt="" style="display:none">
 
     <div class="word-hint" id="wordHint" style="display:none">
@@ -614,7 +615,7 @@
 
     <!-- Tab 3: Configuration Panel Content -->
     <div id="panelConfig" style="display: none; flex-direction: column; gap: 14px; overflow-y: auto; flex-grow: 1; padding-top: 8px;">
-      
+
       <!-- Section 1: Fetch/Import (Credentials Free) -->
       <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid #ffffff0a; border-radius: 8px;">
         <div style="font-weight: 700; font-size: 0.85rem; color: #2ecc71; border-bottom: 1px solid #ffffff0a; padding-bottom: 4px; margin-bottom: 4px;">Sincronizar Datos</div>
@@ -654,7 +655,22 @@
         </button>
       </div>
 
-      <!-- Section 3: Extra Utilities -->
+      <!-- Section 3: Mode probability -->
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid #ffffff0a; border-radius: 8px;">
+        <div style="font-weight: 700; font-size: 0.85rem; color: var(--accent); border-bottom: 1px solid #ffffff0a; padding-bottom: 4px; margin-bottom: 4px;">Probabilidad de modos</div>
+        <p style="font-size: 0.75rem; color: var(--muted); line-height: 1.3; margin-bottom: 4px;">
+          Controla qué tan probable es "Español → Inglés" frente a "Inglés → Español". Las imágenes usan siempre la misma probabilidad que "Español → Inglés".
+        </p>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 0.78rem; color: var(--muted); flex: 1;">Peso Español → Inglés (Inglés → Español = 1)</span>
+          <input type="number" id="esEnWeightInput" min="1" max="10" step="0.5" value="2" style="width:70px; padding: 6px; background: var(--surface); border: 1px solid #ffffff12; color: #fff; border-radius: 6px; font-size: 0.85rem; text-align:center;">
+        </div>
+        <button class="btn" id="applyModeWeightBtn" style="width: 100%; padding: 8px; font-size: 0.78rem; background: rgba(233,69,96,0.12); color: var(--accent); border: 1px solid rgba(233,69,96,0.25);">
+          Aplicar peso
+        </button>
+      </div>
+
+      <!-- Section 4: Extra Utilities -->
       <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid #ffffff0a; border-radius: 8px;">
         <div style="font-weight: 700; font-size: 0.85rem; color: var(--gold); border-bottom: 1px solid #ffffff0a; padding-bottom: 4px; margin-bottom: 2px;">Otras Herramientas</div>
         
@@ -749,16 +765,20 @@ const PAST_PREFIX = "su pasado es";
 const RECENT_LIMIT = 20;
 const WORDS_URL = 'https://raw.githubusercontent.com/H1steria/english_app/refs/heads/master/words.json';
 const PHRASAL_VERBS_URL = 'https://raw.githubusercontent.com/H1steria/english_app/refs/heads/master/phrasal_verbs.json';
+const SENTENCES_URL = 'https://raw.githubusercontent.com/H1steria/english_app/refs/heads/master/sentences.json';
 const MAIN_WORDS_STORAGE_KEY = 'cached_words';
 const MAIN_PHRASALS_STORAGE_KEY = 'cached_phrasal_verbs';
+const MAIN_SENTENCES_STORAGE_KEY = 'cached_sentences';
 const COMPLETED_STORAGE_KEY = 'completed_words';
 const CUSTOM_STORAGE_KEY = 'custom_words';
 const WEIGHTS_STORAGE_KEY = 'englishup_word_weights';
+const MODE_WEIGHT_STORAGE_KEY = 'englishup_mode_weight_es_en';
+const DEFAULT_ES_EN_WEIGHT = 6;
 
 // ── State ──────────────────────────────────────────────
-// `words` is a UNIFIED list: vocabulary words + phrasal verbs.
-// Each entry carries `type: 'word' | 'phrasal_verb'` and stores its
-// text in `.word` regardless of source, so the rest of the app
+// `words` is a UNIFIED list: vocabulary words + phrasal verbs + full-sentence
+// translation items. Each entry carries `type: 'word' | 'phrasal_verb' | 'sentence'`
+// and stores its text in `.word` regardless of source, so the rest of the app
 // (modes, scoring, weights, hints) doesn't need to know the difference.
 let words = [];
 let current = null;
@@ -775,6 +795,7 @@ let revealCount = 0;
 let panelTab = 'all';
 let completedWords = loadCompletedWords();
 let customWords = loadCustomWords();
+let esEnWeight = loadModeWeight();
 
 // ── Persistence helpers ─────────────────────────────────
 function loadCompletedWords() {
@@ -803,6 +824,14 @@ function syncWeightsWithStorage() {
   words.forEach(w => { savedWeights[w.word] = w.weight; });
   localStorage.setItem(WEIGHTS_STORAGE_KEY, JSON.stringify(savedWeights));
 }
+function loadModeWeight() {
+  const saved = parseFloat(localStorage.getItem(MODE_WEIGHT_STORAGE_KEY));
+  return (!isNaN(saved) && saved >= 1) ? saved : DEFAULT_ES_EN_WEIGHT;
+}
+function saveModeWeight(value) {
+  esEnWeight = value;
+  localStorage.setItem(MODE_WEIGHT_STORAGE_KEY, String(value));
+}
 
 // ── Networking helpers ──────────────────────────────────
 async function fetchJSON(url) {
@@ -819,14 +848,15 @@ async function loadWords() {
   try {
     const cachedWords = localStorage.getItem(MAIN_WORDS_STORAGE_KEY);
     const cachedPhrasals = localStorage.getItem(MAIN_PHRASALS_STORAGE_KEY);
+    const cachedSentences = localStorage.getItem(MAIN_SENTENCES_STORAGE_KEY);
     let wordsData = null;
     let phrasalData = null;
-
-    const [wordsResult, phrasalResult] = await Promise.allSettled([
+    let sentencesData = null;
+    const [wordsResult, phrasalResult, sentencesResult] = await Promise.allSettled([
       fetchJSON(WORDS_URL),
-      fetchJSON(PHRASAL_VERBS_URL)
+      fetchJSON(PHRASAL_VERBS_URL),
+      fetchJSON(SENTENCES_URL)
     ]);
-
     if (wordsResult.status === 'fulfilled') {
       wordsData = wordsResult.value;
       localStorage.setItem(MAIN_WORDS_STORAGE_KEY, JSON.stringify(wordsData));
@@ -839,15 +869,19 @@ async function loadWords() {
     } else {
       console.warn("No se pudo obtener phrasal_verbs.json remoto.", phrasalResult.reason);
     }
-
+    if (sentencesResult.status === 'fulfilled') {
+      sentencesData = sentencesResult.value;
+      localStorage.setItem(MAIN_SENTENCES_STORAGE_KEY, JSON.stringify(sentencesData));
+    } else {
+      console.warn("No se pudo obtener sentences.json remoto.", sentencesResult.reason);
+    }
     if (!wordsData && cachedWords) wordsData = JSON.parse(cachedWords);
     if (!phrasalData && cachedPhrasals) phrasalData = JSON.parse(cachedPhrasals);
-
-    if (!wordsData && !phrasalData) {
+    if (!sentencesData && cachedSentences) sentencesData = JSON.parse(cachedSentences);
+    if (!wordsData && !phrasalData && !sentencesData) {
       throw new Error('No se encontraron datos en caché ni se pudo establecer conexión con el servidor.');
     }
-
-    processLoadedData(wordsData || [], phrasalData || []);
+    processLoadedData(wordsData || [], phrasalData || [], sentencesData || []);
     nextWord();
     document.getElementById('appMain').classList.remove('is-loading');
   } catch (e) {
@@ -861,14 +895,14 @@ async function loadWords() {
 }
 
 function buildNormalizedEntry(raw, type, savedWeights, index, issues) {
-  const label = type === 'phrasal_verb' ? 'phrasal_verb' : 'word';
+  const label = type === 'phrasal_verb' ? 'phrasal_verb' : (type === 'sentence' ? 'sentence' : 'word');
   if (!raw || typeof raw !== 'object') {
     const msg = `Entrada #${index} (${label}) inválida: no es un objeto.`;
     console.warn(msg, raw);
     issues.push(msg);
     return null;
   }
-  const rawTerm = type === 'phrasal_verb' ? raw.phrasal_verb : raw.word;
+  const rawTerm = type === 'phrasal_verb' ? raw.phrasal_verb : (type === 'sentence' ? raw.sentence : raw.word);
   const term = safeStr(rawTerm).trim();
   if (!term) {
     const msg = `Entrada #${index}: falta el campo "${label}".`;
@@ -909,7 +943,7 @@ function buildNormalizedEntry(raw, type, savedWeights, index, issues) {
           fill: removeAccents(s.fill.toLowerCase().trim())
         }))
     : null;
-  const rawPast = (typeof raw.past === 'string' && raw.past.trim()) ? raw.past.trim() : null;
+  const rawPast = (type !== 'sentence' && typeof raw.past === 'string' && raw.past.trim()) ? raw.past.trim() : null;
   return {
     ...raw,
     word: term,
@@ -919,14 +953,15 @@ function buildNormalizedEntry(raw, type, savedWeights, index, issues) {
     translations: cleanTranslations.map(t => removeAccents(t.toLowerCase())),
     past: rawPast ? removeAccents(rawPast.toLowerCase()) : null,
     sentences: (processedSentences && processedSentences.length > 0) ? processedSentences : null,
-    image: raw.image || null,
+    image: (type !== 'sentence' && raw.image) ? raw.image : null,
+    synonym: raw.synonym === true,
     weight: weight,
     custom_list: raw.custom_list || false,
     originalIndex: index
   };
 }
 
-function processLoadedData(wordsData, phrasalData) {
+function processLoadedData(wordsData, phrasalData, sentencesData) {
   const savedWeights = loadSavedWeights();
   const issues = [];
   let index = 0;
@@ -936,17 +971,16 @@ function processLoadedData(wordsData, phrasalData) {
   const normalizedPhrasals = phrasalData
     .map(p => buildNormalizedEntry(p, 'phrasal_verb', savedWeights, index++, issues))
     .filter(Boolean);
-
-  words = [...normalizedWords, ...normalizedPhrasals];
-
+  const normalizedSentences = (sentencesData || [])
+    .map(s => buildNormalizedEntry(s, 'sentence', savedWeights, index++, issues))
+    .filter(Boolean);
+  words = [...normalizedWords, ...normalizedPhrasals, ...normalizedSentences];
   if (words.length === 0) {
     throw new Error('Los datos se cargaron pero ninguna entrada es válida (revisa el formato del JSON).');
   }
-
   if (issues.length > 0) {
     reportDataIssues(issues);
   }
-
   syncWeightsWithStorage();
   const validWords = new Set(words.map(w => w.word));
   const cleanedCustom = customWords.filter(w => validWords.has(w));
@@ -964,7 +998,7 @@ function reportDataIssues(issues) {
   alert(
     `⚠️ Se detectaron ${issues.length} entrada(s) con datos inválidos en el vocabulario.\n` +
     `Fueron omitidas para que la app pueda seguir funcionando.\n\n${preview}${extra}\n\n` +
-    `Revisa words.json / phrasal_verbs.json y la consola (F12) para más detalle.`
+    `Revisa words.json / phrasal_verbs.json / sentences.json y la consola (F12) para más detalle.`
   );
 }
 
@@ -983,17 +1017,17 @@ async function handleSyncWords() {
   syncBtn.textContent = '⏳ ...';
   syncBtn.disabled = true;
   try {
-    const [wordsData, phrasalData] = await Promise.all([
+    const [wordsData, phrasalData, sentencesData] = await Promise.all([
       fetchJSON(WORDS_URL),
-      fetchJSON(PHRASAL_VERBS_URL)
+      fetchJSON(PHRASAL_VERBS_URL),
+      fetchJSON(SENTENCES_URL).catch(() => [])
     ]);
     localStorage.setItem(MAIN_WORDS_STORAGE_KEY, JSON.stringify(wordsData));
     localStorage.setItem(MAIN_PHRASALS_STORAGE_KEY, JSON.stringify(phrasalData));
-
+    localStorage.setItem(MAIN_SENTENCES_STORAGE_KEY, JSON.stringify(sentencesData));
     resetAllWordProgress();
-    processLoadedData(wordsData, phrasalData);
+    processLoadedData(wordsData, phrasalData, sentencesData);
     alert('Sincronización y reinicio completados con éxito.');
-
     updatePanelWordCount();
     renderPanelList();
     nextWord();
@@ -1087,7 +1121,21 @@ function updateHintText() {
   }
 }
 
-// ── Grupos (words + phrasal_verbs mezclados) ────────────
+// ── Sinónimos: muestra la descripción junto a la palabra ─
+// para que el usuario pueda diferenciar entre dos entradas
+// que comparten traducción (word.synonym === true).
+function updateSynonymDesc(word) {
+  const el = document.getElementById('wordSynonymDesc');
+  if (!el) return;
+  if (word && word.synonym === true && word.description) {
+    el.textContent = word.description;
+    el.style.display = 'block';
+  } else {
+    el.textContent = '';
+    el.style.display = 'none';
+  }
+}
+// ── Grupos (words + phrasal_verbs + sentences mezclados) ─
 function calculateGroups() {
   const sorted = getSortedCustomWords();
   const groups = [];
@@ -1340,16 +1388,35 @@ function showEmptyListState() {
   document.getElementById('wordDisplay').textContent = '—';
   document.getElementById('wordImage').style.display = 'none';
   document.getElementById('wordHint').style.display = 'none';
+  updateSynonymDesc(null);
   const descEl = document.getElementById('feedbackDesc');
   descEl.textContent = 'Tu lista personalizada está vacía. Añade elementos desde el panel (⚙️).';
   descEl.style.display = 'block';
   document.getElementById('inputSection').style.display = 'none';
   document.getElementById('feedback').className = '';
 }
+// Selección de modo ponderada: "es-en" es, por defecto, más probable que
+// "en-es" (peso configurable en el panel de Ajustes). Las imágenes ("img-en")
+// siempre comparten el mismo peso que "es-en". Aplica igual a palabras,
+// phrasal verbs y oraciones completas (estas últimas nunca tienen imagen).
+function getModeWeights() {
+  return { 'en-es': 1, 'es-en': esEnWeight, 'img-en': esEnWeight };
+}
 function pickModeFor(word) {
-  const availableModes = ['en-es', 'es-en'];
-  if (word.image) availableModes.push('img-en');
-  return availableModes[Math.floor(Math.random() * availableModes.length)];
+  const weights = getModeWeights();
+  const availableModes = [
+    { mode: 'en-es', weight: weights['en-es'] },
+    { mode: 'es-en', weight: weights['es-en'] }
+  ];
+  if (word.image) availableModes.push({ mode: 'img-en', weight: weights['img-en'] });
+  const totalWeight = availableModes.reduce((sum, m) => sum + m.weight, 0);
+  let randomValue = Math.random() * totalWeight;
+  let cumulativeSum = 0;
+  for (let i = 0; i < availableModes.length; i++) {
+    cumulativeSum += availableModes[i].weight;
+    if (randomValue <= cumulativeSum) return availableModes[i].mode;
+  }
+  return availableModes[availableModes.length - 1].mode;
 }
 function resetWordCard() {
   const wordDisplay = document.getElementById('wordDisplay');
@@ -1359,6 +1426,7 @@ function resetWordCard() {
   document.getElementById('wordImage').style.display = 'none';
   document.getElementById('wordHint').style.display = 'none';
   document.getElementById('hintContent').style.display = 'none';
+  updateSynonymDesc(null);
 }
 function configureHint({ label, image = null, text = null }) {
   const hintBtn = document.getElementById('hintBtn');
@@ -1373,29 +1441,34 @@ function configureHint({ label, image = null, text = null }) {
   document.getElementById('wordHint').style.display = 'block';
 }
 function renderEnEsMode(word) {
-  document.getElementById('wordLabel').textContent = '¿Cómo se traduce?';
+  const isSentence = word.type === 'sentence';
+  document.getElementById('wordLabel').textContent = isSentence ? '¿Cómo se traduce esta frase?' : '¿Cómo se traduce?';
   document.getElementById('wordDisplay').textContent = word.word;
+  updateSynonymDesc(word);
   const hasPast = !!word.past;
-  document.getElementById('inputLabel').textContent = hasPast
-    ? 'Traducciones al español y su pasado (separados por coma)'
-    : 'Traducciones al español (separadas por coma)';
+  document.getElementById('inputLabel').textContent = isSentence
+    ? 'Traducción al español (frase completa)'
+    : (hasPast ? 'Traducciones al español y su pasado (separados por coma)' : 'Traducciones al español (separadas por coma)');
   configureHint({ label: 'Ver pista 👁️', image: word.image || null, text: "" });
   updateHintText();
 }
 function renderEsEnMode(word) {
-  document.getElementById('wordLabel').textContent = '¿Cómo se dice en inglés?';
+  const isSentence = word.type === 'sentence';
+  document.getElementById('wordLabel').textContent = isSentence ? '¿Cómo se dice esta frase en inglés?' : '¿Cómo se dice en inglés?';
   document.getElementById('wordDisplay').textContent = word.rawTranslations.join(', ');
   document.getElementById('wordDisplay').style.fontSize = '1.3rem';
+  updateSynonymDesc(word);
   const hasPast = !!word.past;
-  document.getElementById('inputLabel').textContent = hasPast
-    ? 'Palabra en inglés y su pasado (separados por coma)'
-    : 'Palabra en inglés';
+  document.getElementById('inputLabel').textContent = isSentence
+    ? 'Frase completa en inglés'
+    : (hasPast ? 'Palabra en inglés y su pasado (separados por coma)' : 'Palabra en inglés');
   configureHint({ label: 'Ver pista 👁️', text: "", image: word.image || null });
   updateHintText();
 }
 function renderImgEnMode(word) {
   document.getElementById('wordLabel').textContent = '¿Qué palabra representa esta imagen?';
   document.getElementById('wordDisplay').style.display = 'none';
+  updateSynonymDesc(word);
   const wordImage = document.getElementById('wordImage');
   wordImage.src = word.image;
   wordImage.style.display = 'block';
@@ -1551,25 +1624,50 @@ function resolveWordAndPast(correctWord, correctPast, userItems) {
   }
   return { wordAttempt, pastAttempt };
 }
+function normalizeSentenceAnswer(s) {
+  return removeAccents(safeStr(s).toLowerCase().trim())
+    .replace(/\s+/g, ' ')
+    .replace(/[.,;:!?¡¿]+$/g, '');
+}
+function evaluateSentenceEnEs(word, rawInput) {
+  const userNorm = normalizeSentenceAnswer(rawInput);
+  const allCorrect = word.rawTranslations.some(t => normalizeSentenceAnswer(t) === userNorm);
+  return { allCorrect, userNorm };
+}
+function evaluateSentenceEsEn(word, rawInput) {
+  const userNorm = normalizeSentenceAnswer(rawInput);
+  const expectedNorm = normalizeSentenceAnswer(word.word);
+  return { allCorrect: userNorm === expectedNorm, userNorm };
+}
 function checkAnswer() {
   if (!current) return;
   document.getElementById('wordDisplay').style.visibility = 'visible';
   const rawTrans = document.getElementById('translationInput').value;
-  const userItems = parseInput(rawTrans);
   let evalResult;
-  if (currentMode === 'en-es') {
-    evalResult = evaluateEnEs(current, userItems);
-    if (!evalResult.allCorrect) renderEnEsLeds(current, userItems, evalResult);
-  } else if (currentMode === 'es-en') {
-    evalResult = evaluateEsEn(current, userItems);
-    if (!evalResult.allCorrect) renderEsEnLeds(current, userItems, evalResult);
-  } else if (currentMode === 'img-en') {
-    evalResult = evaluateImgEn(current, userItems);
-    if (!evalResult.allCorrect) renderImgEnLeds(current, userItems, evalResult);
+  if (current.type === 'sentence') {
+    if (currentMode === 'en-es') {
+      evalResult = evaluateSentenceEnEs(current, rawTrans);
+      if (!evalResult.allCorrect) renderSentenceTranslationLeds(current.rawTranslations, rawTrans);
+    } else {
+      evalResult = evaluateSentenceEsEn(current, rawTrans);
+      if (!evalResult.allCorrect) renderSentenceTranslationLeds([current.word], rawTrans);
+    }
   } else {
-    const userInputSingle = removeAccents(rawTrans.toLowerCase().trim());
-    evalResult = evaluateSentence(currentSentence, userInputSingle);
-    if (!evalResult.allCorrect) renderSentenceLeds(currentSentence, rawTrans);
+    const userItems = parseInput(rawTrans);
+    if (currentMode === 'en-es') {
+      evalResult = evaluateEnEs(current, userItems);
+      if (!evalResult.allCorrect) renderEnEsLeds(current, userItems, evalResult);
+    } else if (currentMode === 'es-en') {
+      evalResult = evaluateEsEn(current, userItems);
+      if (!evalResult.allCorrect) renderEsEnLeds(current, userItems, evalResult);
+    } else if (currentMode === 'img-en') {
+      evalResult = evaluateImgEn(current, userItems);
+      if (!evalResult.allCorrect) renderImgEnLeds(current, userItems, evalResult);
+    } else {
+      const userInputSingle = removeAccents(rawTrans.toLowerCase().trim());
+      evalResult = evaluateSentence(currentSentence, userInputSingle);
+      if (!evalResult.allCorrect) renderSentenceLeds(currentSentence, rawTrans);
+    }
   }
   applyAnswerResult(evalResult.allCorrect);
   updateStats();
@@ -1734,6 +1832,11 @@ function renderSentenceLeds(sentence, rawTrans) {
   ]);
 }
 
+function renderSentenceTranslationLeds(expectedList, rawInput) {
+  const pills = expectedList.map(exp => createLedPill(`Aceptado: ${exp}`, 'missing'));
+  pills.push(createLedPill(`Escribiste: ${rawInput || 'nada'}`, 'incorrect'));
+  renderLedPills(pills);
+}
 // ── Streak / ciclo / pesos ──────────────────────────────
 function applyAnswerResult(allCorrect) {
   if (allCorrect) {
@@ -1777,7 +1880,14 @@ function showFeedback(evalResult) {
   else { descEl.style.display = 'none'; }
   const transEl = document.getElementById('feedbackTranslation');
   const transTextEl = document.getElementById('feedbackTranslationText');
-  if (currentMode === 'img-en') {
+  if (current.type === 'sentence') {
+    if (currentMode === 'es-en') {
+      transTextEl.innerHTML = `<strong>${current.word}</strong>`;
+    } else {
+      transTextEl.textContent = current.rawTranslations.join(' / ');
+    }
+    transEl.style.display = 'block';
+  } else if (currentMode === 'img-en') {
     const list = current.rawTranslations || current.translations;
     let html = `<strong>${current.word}</strong>: ${list.join(', ')}`;
     if (current.past) html += ` <span style="color: var(--muted); font-size: 0.8rem; margin-left: 5px;">(Pasado: ${current.rawPast || current.past})</span>`;
@@ -1857,9 +1967,10 @@ function launchConfetti() {
 function updatePanelWordCount() {
   const countEl = document.getElementById('panelWordCount');
   if (!countEl) return;
-  const wordCount = words.filter(w => w.type !== 'phrasal_verb').length;
+  const wordCount = words.filter(w => w.type === 'word').length;
   const phrasalCount = words.filter(w => w.type === 'phrasal_verb').length;
-  countEl.textContent = `Total: ${words.length} elementos (${wordCount} palabras, ${phrasalCount} phrasal verbs)`;
+  const sentenceCount = words.filter(w => w.type === 'sentence').length;
+  countEl.textContent = `Total: ${words.length} elementos (${wordCount} palabras, ${phrasalCount} phrasal verbs, ${sentenceCount} oraciones)`;
 }
 function updateCustomCountTab() {
   const el = document.getElementById('customCountTab');
@@ -1872,7 +1983,7 @@ function createEmptyStateNode(text) {
 }
 
 // ── Panel: lista (pestañas Todas / Mi lista) con separación
-//    entre palabras y phrasal verbs dentro de "Todas" ────
+//    entre palabras, phrasal verbs y oraciones dentro de "Todas" ─
 function createPanelItemNode(w, savedWeights) {
   const node = document.getElementById('tplPanelItem').content.firstElementChild.cloneNode(true);
   const weight = savedWeights[w.word] !== undefined ? savedWeights[w.word] : 1;
@@ -1880,11 +1991,23 @@ function createPanelItemNode(w, savedWeights) {
   node.classList.toggle('is-custom', isCustom);
   node.querySelector('.word-name').textContent = w.word;
   const badge = node.querySelector('.type-badge');
-  const isPhrasal = w.type === 'phrasal_verb';
-  badge.textContent = isPhrasal ? 'PV' : 'W';
-  badge.style.cssText = isPhrasal
-    ? 'font-size:0.65rem; padding:1px 6px; border-radius:6px; background:rgba(233,69,96,0.15); color:var(--accent); margin-left:6px;'
-    : 'font-size:0.65rem; padding:1px 6px; border-radius:6px; background:rgba(15,155,142,0.15); color:var(--teal); margin-left:6px;';
+  if (w.type === 'phrasal_verb') {
+    badge.textContent = 'PV';
+    badge.style.cssText = 'font-size:0.65rem; padding:1px 6px; border-radius:6px; background:rgba(233,69,96,0.15); color:var(--accent); margin-left:6px;';
+  } else if (w.type === 'sentence') {
+    badge.textContent = 'FRASE';
+    badge.style.cssText = 'font-size:0.65rem; padding:1px 6px; border-radius:6px; background:rgba(155,89,182,0.18); color:#c07df0; margin-left:6px;';
+  } else {
+    badge.textContent = 'W';
+    badge.style.cssText = 'font-size:0.65rem; padding:1px 6px; border-radius:6px; background:rgba(15,155,142,0.15); color:var(--teal); margin-left:6px;';
+  }
+  if (w.synonym === true) {
+    const synBadge = document.createElement('span');
+    synBadge.textContent = 'SYN';
+    synBadge.title = 'Sinónimo: muestra la descripción junto a la palabra';
+    synBadge.style.cssText = 'font-size:0.65rem; padding:1px 6px; border-radius:6px; background:rgba(245,197,24,0.15); color:var(--gold); margin-left:4px;';
+    badge.insertAdjacentElement('afterend', synBadge);
+  }
   const weightEl = node.querySelector('.word-weight');
   weightEl.textContent = `x${weight}`;
   weightEl.style.color = weight > 1 ? 'var(--accent)' : '';
@@ -1922,9 +2045,10 @@ function renderPanelList() {
       list.forEach(w => listContainer.appendChild(createPanelItemNode(w, savedWeights)));
     }
   } else {
-    const wordEntries = sortByWeightDesc(words.filter(w => w.type !== 'phrasal_verb'), savedWeights);
+    const wordEntries = sortByWeightDesc(words.filter(w => w.type === 'word'), savedWeights);
     const phrasalEntries = sortByWeightDesc(words.filter(w => w.type === 'phrasal_verb'), savedWeights);
-    if (wordEntries.length === 0 && phrasalEntries.length === 0) {
+    const sentenceEntries = sortByWeightDesc(words.filter(w => w.type === 'sentence'), savedWeights);
+    if (wordEntries.length === 0 && phrasalEntries.length === 0 && sentenceEntries.length === 0) {
       listContainer.appendChild(createEmptyStateNode('No hay elementos.'));
     } else {
       if (wordEntries.length > 0) {
@@ -1934,6 +2058,10 @@ function renderPanelList() {
       if (phrasalEntries.length > 0) {
         listContainer.appendChild(createSectionHeaderNode('Phrasal Verbs', phrasalEntries.length));
         phrasalEntries.forEach(w => listContainer.appendChild(createPanelItemNode(w, savedWeights)));
+      }
+      if (sentenceEntries.length > 0) {
+        listContainer.appendChild(createSectionHeaderNode('Oraciones', sentenceEntries.length));
+        sentenceEntries.forEach(w => listContainer.appendChild(createPanelItemNode(w, savedWeights)));
       }
     }
   }
@@ -1973,6 +2101,8 @@ function openWeightsPanel() {
   updatePanelWordCount();
   updateCustomCountTab();
   renderPanelList();
+  const weightInput = document.getElementById('esEnWeightInput');
+  if (weightInput) weightInput.value = esEnWeight;
   document.getElementById('weightsModal').classList.add('active');
 }
 function closeWeightsPanel() {
@@ -1995,6 +2125,10 @@ function switchPanelTab(tab) {
   document.getElementById('panelActionsGroups').style.display = (tab === 'groups') ? '' : 'none';
   if (isList) renderPanelList();
   if (isGroups) renderGroupsTab();
+  if (isConfig) {
+    const weightInput = document.getElementById('esEnWeightInput');
+    if (weightInput) weightInput.value = esEnWeight;
+  }
 }
 function resetAllWeights() {
   if (!confirm('¿Deseas restablecer todos los pesos a 1?')) return;
@@ -2018,17 +2152,31 @@ function clearCustomList() {
   renderPanelList();
   renderGroupsTab();
 }
+function handleApplyModeWeight() {
+  const input = document.getElementById('esEnWeightInput');
+  const val = parseFloat(input.value);
+  if (isNaN(val) || val < 1) {
+    alert('El peso debe ser un número mayor o igual a 1 (1 = misma probabilidad que Inglés → Español).');
+    input.value = esEnWeight;
+    return;
+  }
+  saveModeWeight(val);
+  alert(`Listo. "Español → Inglés" (e imágenes) ahora son ${val}x más probables que "Inglés → Español".`);
+}
 
 // ── Exportación local ────────────────────────────────────
 function toCleanBaseItem(w) {
-  const keyName = w.type === 'phrasal_verb' ? 'phrasal_verb' : 'word';
+  const keyName = w.type === 'phrasal_verb' ? 'phrasal_verb' : (w.type === 'sentence' ? 'sentence' : 'word');
   const item = {
     [keyName]: w.word,
     translations: w.rawTranslations || w.translations,
     description: w.description || "",
-    past: w.rawPast || w.past || null,
   };
-  if (w.image) item.image = w.image;
+  if (w.type !== 'sentence') {
+    item.past = w.rawPast || w.past || null;
+    if (w.image) item.image = w.image;
+  }
+  if (w.synonym === true) item.synonym = true;
   if (w.sentences && w.sentences.length > 0) {
     item.sentences = w.sentences.map(s => ({ sentence: s.sentence, fill: s.fill }));
   }
@@ -2051,14 +2199,77 @@ function exportCustomListJSON() {
   URL.revokeObjectURL(url);
 }
 
-// ── Sincronización con GitHub: words.json + phrasal_verbs.json ─
+// ── Sincronización con GitHub: words.json + phrasal_verbs.json + sentences.json ─
 async function fetchGitHubFile(url, headers) {
-  const res = await fetch(url, { headers });
-  if (!res.ok) throw new Error(`No se pudo verificar la versión en el servidor (${url}). Código: ${res.status}`);
-  const fileData = await res.json();
-  const rawBytes = Uint8Array.from(atob(fileData.content.replace(/\n/g, '')), c => c.charCodeAt(0));
-  const parsed = JSON.parse(new TextDecoder().decode(rawBytes));
+  let res;
+  try {
+    res = await fetch(url, { headers });
+  } catch (networkErr) {
+    throw new Error(`No se pudo conectar con GitHub (${url}). Revisa tu conexión de red. Detalle: ${networkErr.message}`);
+  }
+  if (!res.ok) {
+    let bodyText = '';
+    try { bodyText = await res.text(); } catch (_) {}
+    let apiMsg = '';
+    try { apiMsg = bodyText ? JSON.parse(bodyText).message : ''; } catch (_) {}
+    throw new Error(`No se pudo verificar la versión en el servidor (${url}). Código: ${res.status}${apiMsg ? ' — ' + apiMsg : ''}`);
+  }
+  let fileData;
+  try {
+    fileData = await res.json();
+  } catch (parseErr) {
+    throw new Error(`Respuesta de GitHub no es JSON válido al leer ${url}.`);
+  }
+
+  let base64Content = fileData.content;
+
+  // Contents API omits content for files > 1MB (encoding: "none", content: "").
+  // Fall back to the Git Blobs API, which supports files up to 100MB.
+  if (!base64Content || fileData.encoding === 'none') {
+    if (!fileData.git_url) {
+      throw new Error(`El archivo ${url} supera 1MB y GitHub no devolvió una URL de blob para leerlo (git_url ausente).`);
+    }
+    let blobRes;
+    try {
+      blobRes = await fetch(fileData.git_url, { headers });
+    } catch (networkErr) {
+      throw new Error(`No se pudo conectar con GitHub para leer el blob de ${url}. Detalle: ${networkErr.message}`);
+    }
+    if (!blobRes.ok) {
+      throw new Error(`No se pudo obtener el contenido completo de ${url} vía blob API. Código: ${blobRes.status}`);
+    }
+    let blobData;
+    try {
+      blobData = await blobRes.json();
+    } catch (parseErr) {
+      throw new Error(`Respuesta de blob API no es JSON válido para ${url}.`);
+    }
+    if (!blobData || typeof blobData.content !== 'string' || !blobData.content) {
+      throw new Error(`La blob API no devolvió contenido para ${url} (¿archivo vacío o demasiado grande incluso para blobs, >100MB?).`);
+    }
+    base64Content = blobData.content;
+  }
+
+  let parsed;
+  try {
+    const rawBytes = Uint8Array.from(atob(base64Content.replace(/\n/g, '')), c => c.charCodeAt(0));
+    parsed = JSON.parse(new TextDecoder().decode(rawBytes));
+  } catch (decodeErr) {
+    throw new Error(`El contenido de ${url} en GitHub no es un JSON válido (archivo corrupto o mal formado en el repositorio). Detalle: ${decodeErr.message}`);
+  }
   return { sha: fileData.sha, data: parsed };
+}
+async function fetchGitHubFileOptional(url, headers) {
+  let res;
+  try {
+    res = await fetch(url, { headers });
+  } catch (networkErr) {
+    throw new Error(`No se pudo conectar con GitHub (${url}). Revisa tu conexión de red. Detalle: ${networkErr.message}`);
+  }
+  if (res.status === 404) {
+    return { sha: null, data: [] };
+  }
+  return fetchGitHubFile(url, headers);
 }
 function toBase64(jsonString) {
   const utf8Bytes = new TextEncoder().encode(jsonString);
@@ -2070,14 +2281,24 @@ function toBase64(jsonString) {
   return btoa(binary);
 }
 async function putGitHubFile(url, headers, message, base64Content, sha) {
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: { ...headers, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, content: base64Content, sha })
-  });
+  let res;
+  try {
+    res = await fetch(url, {
+      method: 'PUT',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, content: base64Content, sha: sha || undefined })
+    });
+  } catch (networkErr) {
+    throw new Error(`No se pudo conectar con GitHub para subir ${url}. Revisa tu conexión de red. Detalle: ${networkErr.message}`);
+  }
   if (!res.ok) {
-    const errorDetails = await res.json();
-    throw new Error(errorDetails.message || 'Error en la subida.');
+    let bodyText = '';
+    try { bodyText = await res.text(); } catch (_) {}
+    let apiMsg = '';
+    if (bodyText) {
+      try { apiMsg = JSON.parse(bodyText).message; } catch (_) { apiMsg = bodyText.slice(0, 200); }
+    }
+    throw new Error(`Error al subir ${url} (código ${res.status})${apiMsg ? ': ' + apiMsg : ' — sin detalles adicionales del servidor.'}`);
   }
 }
 function buildExportEntry(localWord, serverEntry, keyName, termValue, syncCustomList) {
@@ -2124,27 +2345,35 @@ async function pushToGitHub() {
   const originalText = btn.textContent;
   btn.textContent = 'Subiendo... ⏳';
   btn.disabled = true;
+  let stage = 'inicio';
   try {
     const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' };
     const wordsUrl = `https://api.github.com/repos/${owner}/${repo}/contents/words.json`;
     const phrasalsUrl = `https://api.github.com/repos/${owner}/${repo}/contents/phrasal_verbs.json`;
-
-    const localWordsOnly = words.filter(w => w.type !== 'phrasal_verb');
+    const sentencesUrl = `https://api.github.com/repos/${owner}/${repo}/contents/sentences.json`;
+    const localWordsOnly = words.filter(w => w.type === 'word');
     const localPhrasalsOnly = words.filter(w => w.type === 'phrasal_verb');
-
+    const localSentencesOnly = words.filter(w => w.type === 'sentence');
+    stage = 'leyendo words.json remoto';
     const { sha: wordsSha, data: serverWords } = await fetchGitHubFile(wordsUrl, headers);
+    stage = 'leyendo phrasal_verbs.json remoto';
     const { sha: phrasalsSha, data: serverPhrasals } = await fetchGitHubFile(phrasalsUrl, headers);
-
+    stage = 'leyendo sentences.json remoto';
+    const { sha: sentencesSha, data: serverSentences } = await fetchGitHubFileOptional(sentencesUrl, headers);
+    stage = 'preparando datos a subir';
     const wordsExport = buildExportDataset(serverWords, localWordsOnly, 'word', syncCustomList);
     const phrasalsExport = buildExportDataset(serverPhrasals, localPhrasalsOnly, 'phrasal_verb', syncCustomList);
-
+    const sentencesExport = buildExportDataset(serverSentences, localSentencesOnly, 'sentence', syncCustomList);
+    stage = 'subiendo words.json';
     await putGitHubFile(wordsUrl, headers, 'Sync words.json', toBase64(JSON.stringify(wordsExport, null, 1)), wordsSha);
+    stage = 'subiendo phrasal_verbs.json';
     await putGitHubFile(phrasalsUrl, headers, 'Sync phrasal_verbs.json', toBase64(JSON.stringify(phrasalsExport, null, 1)), phrasalsSha);
-
+    stage = 'subiendo sentences.json';
+    await putGitHubFile(sentencesUrl, headers, 'Sync sentences.json', toBase64(JSON.stringify(sentencesExport, null, 1)), sentencesSha);
     alert('¡Cambios guardados en GitHub correctamente!');
   } catch (error) {
-    console.error(error);
-    alert('Error al exportar cambios: ' + error.message);
+    console.error(`Fallo en etapa "${stage}":`, error);
+    alert(`Error al exportar cambios (etapa: ${stage}):\n${error.message}`);
   } finally {
     btn.textContent = originalText;
     btn.disabled = false;
@@ -2161,6 +2390,7 @@ document.getElementById('tabConfig').addEventListener('click', () => switchPanel
 document.getElementById('tabGroups').addEventListener('click', () => switchPanelTab('groups'));
 document.getElementById('exportCustomBtn').addEventListener('click', exportCustomListJSON);
 document.getElementById('loadCustomFromJsonBtn').addEventListener('click', handleLoadCustomFromJSON);
+document.getElementById('applyModeWeightBtn').addEventListener('click', handleApplyModeWeight);
 document.getElementById('applyGroupSizeBtn').addEventListener('click', () => {
   const val = parseInt(document.getElementById('groupSizeInput').value, 10);
   if (isNaN(val) || val < 1) { alert('Introduce un número válido.'); return; }

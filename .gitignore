@@ -4,6 +4,7 @@
 !phrasal_verbs.json
 !words.json
 !README.md
+!sentences.json
 !.gitignore
 
 !utils
@@ -12,5 +13,6 @@
 !utils/english.drawio
 !utils/execute.txt
 !utils/extract_all_words.py
+!utils/format.py
 !utils/tiempos.txt
 !utils/update_custom_list.py

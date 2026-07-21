@@ -1,0 +1,74 @@
+[
+ {
+  "sentence": "show the description at same time as the word",
+  "translations": [
+   "mostrar la descripción al mismo tiempo que la palabra"
+  ],
+  "description": "",
+  "custom_list": true,
+  "group": 3
+ },
+ {
+  "sentence": "He is someone you can trust",
+  "translations": [
+   "Él es alguien en quien se puede confiar"
+  ],
+  "description": "",
+  "custom_list": true,
+  "group": 3
+ },
+ {
+  "sentence": "If that happened",
+  "translations": [
+   "Si eso sucediera"
+  ],
+  "description": "",
+  "custom_list": true,
+  "group": 3
+ },
+ {
+  "sentence": "What does the ring allow to do?",
+  "translations": [
+   "¿Qué permite hacer el anillo?"
+  ],
+  "description": "",
+  "custom_list": true,
+  "group": 3
+ },
+ {
+  "sentence": "To prevent them from betraying him",
+  "translations": [
+   "Para evitar que lo traicionaran"
+  ],
+  "description": "",
+  "custom_list": true,
+  "group": 3
+ },
+ {
+  "sentence": "According to Momonga",
+  "translations": [
+   "Según Momonga"
+  ],
+  "description": "",
+  "custom_list": true,
+  "group": 3
+ },
+ {
+  "sentence": "Why did Momonga wear full armor",
+  "translations": [
+   "¿Por qué Momonga llevaba armadura completa?"
+  ],
+  "description": "",
+  "custom_list": true,
+  "group": 4
+ },
+ {
+  "sentence": "Her sister's life is what keeps her running",
+  "translations": [
+   "La vida de su hermana es lo que la mantiene corriendo"
+  ],
+  "description": "",
+  "custom_list": true,
+  "group": 4
+ }
+]

@@ -5,9 +5,7 @@
    "traer de vuelta"
   ],
   "description": "Retornar algo a su lugar de origen",
-  "past": "brought back",
-  "custom_list": true,
-  "group": 1
+  "past": "brought back"
  },
  {
   "phrasal_verb": "bring on",
@@ -25,9 +23,7 @@
    "ponerse al día"
   ],
   "description": "Alcanzar a alguien que va adelante o actualizarse sobre noticias y novedades.",
-  "past": "caught up",
-  "custom_list": true,
-  "group": 1
+  "past": "caught up"
  },
  {
   "phrasal_verb": "deal with",
@@ -35,9 +31,7 @@
    "lidiar con"
   ],
   "description": "Tomar las medidas necesarias para resolver un problema o manejar una situación.",
-  "past": "dealt with",
-  "custom_list": true,
-  "group": 1
+  "past": "dealt with"
  },
  {
   "phrasal_verb": "fall apart",
@@ -45,9 +39,7 @@
    "desmoronarse"
   ],
   "description": "Romperse en pedazos, fallar una relación o colapsar emocionalmente.",
-  "past": "fell apart",
-  "custom_list": true,
-  "group": 1
+  "past": "fell apart"
  },
  {
   "phrasal_verb": "fall for",
@@ -55,9 +47,7 @@
    "enamorarse de"
   ],
   "description": "Sentir una fuerte atracción por alguien o ser engañado por una mentira.",
-  "past": "fell for",
-  "custom_list": true,
-  "group": 1
+  "past": "fell for"
  },
  {
   "phrasal_verb": "feel up to",
@@ -65,9 +55,7 @@
    "sentirse capaz de"
   ],
   "description": "Tener la fuerza, energía o ánimo suficiente para realizar una actividad.",
-  "past": "felt up to",
-  "custom_list": true,
-  "group": 1
+  "past": "felt up to"
  },
  {
   "phrasal_verb": "get up",
@@ -189,7 +177,7 @@
   "description": "Permanecer o deambular en un lugar sin un propósito definido.",
   "past": "hung around",
   "custom_list": true,
-  "group": 1
+  "group": 2
  },
  {
   "phrasal_verb": "hit back",
@@ -393,7 +381,7 @@
   "description": "Levantarse de una silla o el suelo para quedar erguido sobre los pies.",
   "past": "stood up",
   "custom_list": true,
-  "group": 2
+  "group": 3
  },
  {
   "phrasal_verb": "turn on",
@@ -495,7 +483,37 @@
   ],
   "description": "Sentir respeto y admiración por una persona debido a sus cualidades.",
   "past": "looked up to",
-  "image": null,
-  "custom_list": true
+  "custom_list": true,
+  "group": 3
+ },
+ {
+  "phrasal_verb": "come up with",
+  "translations": [
+   "proponer"
+  ],
+  "description": "Generar una idea, encontrar una solución o producir una respuesta.",
+  "past": "came up with",
+  "custom_list": true,
+  "group": 3
+ },
+ {
+  "phrasal_verb": "take over",
+  "translations": [
+   "tomar el control"
+  ],
+  "description": "Hacerse cargo de una tarea, empresa o responsabilidad de alguien más.",
+  "past": "took over",
+  "custom_list": true,
+  "group": 3
+ },
+ {
+  "phrasal_verb": "so that",
+  "translations": [
+   "para que"
+  ],
+  "description": "Conjunción utilizada para indicar el propósito o el resultado de una acción.",
+  "past": null,
+  "custom_list": true,
+  "group": 3
  }
 ]
