@@ -1,11 +1,13 @@
 *
 
-!index.html
-!phrasal_verbs.json
-!words.json
-!README.md
-!sentences.json
-!.gitignore
+!js
+!js/data-loader.js
+!js/github-sync.js
+!js/main.js
+!js/panel.js
+!js/state.js
+!js/utils.js
+!js/word-flow.js
 
 !utils
 !utils/add images to json.py
@@ -15,4 +17,12 @@
 !utils/extract_all_words.py
 !utils/format.py
 !utils/tiempos.txt
+!utils/update_apk.bat
 !utils/update_custom_list.py
+
+!index.html
+!phrasal_verbs.json
+!words.json
+!README.md
+!sentences.json
+!.gitignore

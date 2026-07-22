@@ -6,7 +6,7 @@
   ],
   "description": "",
   "custom_list": true,
-  "group": 3
+  "group": 1
  },
  {
   "sentence": "He is someone you can trust",
@@ -15,7 +15,7 @@
   ],
   "description": "",
   "custom_list": true,
-  "group": 3
+  "group": 2
  },
  {
   "sentence": "If that happened",
@@ -24,7 +24,7 @@
   ],
   "description": "",
   "custom_list": true,
-  "group": 3
+  "group": 2
  },
  {
   "sentence": "What does the ring allow to do?",
@@ -33,7 +33,7 @@
   ],
   "description": "",
   "custom_list": true,
-  "group": 3
+  "group": 2
  },
  {
   "sentence": "To prevent them from betraying him",
@@ -42,7 +42,7 @@
   ],
   "description": "",
   "custom_list": true,
-  "group": 3
+  "group": 2
  },
  {
   "sentence": "According to Momonga",
@@ -51,7 +51,7 @@
   ],
   "description": "",
   "custom_list": true,
-  "group": 3
+  "group": 2
  },
  {
   "sentence": "Why did Momonga wear full armor",
@@ -60,7 +60,7 @@
   ],
   "description": "",
   "custom_list": true,
-  "group": 4
+  "group": 2
  },
  {
   "sentence": "Her sister's life is what keeps her running",
@@ -69,6 +69,6 @@
   ],
   "description": "",
   "custom_list": true,
-  "group": 4
+  "group": 2
  }
 ]
