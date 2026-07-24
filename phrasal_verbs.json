@@ -155,9 +155,7 @@
    "pasar el tiempo"
   ],
   "description": "Permanecer o deambular en un lugar sin un propósito definido.",
-  "past": "hung around",
-  "custom_list": true,
-  "group": 1
+  "past": "hung around"
  },
  {
   "phrasal_verb": "hit back",
@@ -323,9 +321,7 @@
    "ponerse de pie"
   ],
   "description": "Levantarse de una silla o el suelo para quedar erguido sobre los pies.",
-  "past": "stood up",
-  "custom_list": true,
-  "group": 1
+  "past": "stood up"
  },
  {
   "phrasal_verb": "turn on",
@@ -333,9 +329,7 @@
    "encender"
   ],
   "description": "Activar el flujo de corriente eléctrica, agua o gas de un aparato.",
-  "past": "turned on",
-  "custom_list": true,
-  "group": 1
+  "past": "turned on"
  },
  {
   "phrasal_verb": "turn off",
@@ -343,9 +337,7 @@
    "apagar"
   ],
   "description": "Desactivar la corriente eléctrica o cortar el suministro de un dispositivo.",
-  "past": "turned off",
-  "custom_list": true,
-  "group": 1
+  "past": "turned off"
  },
  {
   "phrasal_verb": "turn up",
@@ -395,17 +387,15 @@
    "con quien"
   ],
   "description": "Pregunta utilizada para averiguar las personas que acompañan al interlocutor.",
-  "past": null,
   "custom_list": true,
   "group": 1
  },
  {
   "phrasal_verb": "who is this for",
   "translations": [
-   "para quien"
+   "para quien es esto"
   ],
   "description": "Pregunta que indaga sobre el destinatario o beneficiario de un objeto o acción.",
-  "past": null,
   "custom_list": true,
   "group": 1
  },
@@ -415,10 +405,8 @@
    "despertar"
   ],
   "description": "Despertar del sueño.",
-  "past": null,
   "image": "data:image/jpeg;base64,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",
-  "custom_list": true,
-  "group": 1
+  "custom_list": true
  },
  {
   "phrasal_verb": "look up to",
@@ -456,8 +444,43 @@
    "para que"
   ],
   "description": "Conjunción utilizada para indicar el propósito o el resultado de una acción.",
-  "past": null,
   "custom_list": true,
   "group": 1
+ },
+ {
+  "phrasal_verb": "have to",
+  "translations": [
+   "tener que"
+  ],
+  "description": "Expresa obligación formal, necesidad o certeza imperativa de hacer algo.",
+  "past": "had to",
+  "custom_list": true
+ },
+ {
+  "phrasal_verb": "get down",
+  "translations": [
+   "bajar"
+  ],
+  "description": "Descender.",
+  "past": "got down",
+  "custom_list": true
+ },
+ {
+  "phrasal_verb": "hold back",
+  "translations": [
+   "contener"
+  ],
+  "description": "Reprimir emociones, o impedir el avance o progreso de algo o alguien.",
+  "past": "held back",
+  "custom_list": true
+ },
+ {
+  "phrasal_verb": "show up",
+  "translations": [
+   "aparecer"
+  ],
+  "description": "Llegar o presentarse en un lugar, especialmente cuando es inesperado o con retraso.",
+  "past": "showed up",
+  "custom_list": true
  }
 ]
