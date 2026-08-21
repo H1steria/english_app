@@ -5,8 +5,7 @@
    "mostrar la descripción al mismo tiempo que la palabra"
   ],
   "description": "",
-  "custom_list": true,
-  "group": 1
+  "custom_list": true
  },
  {
   "sentence": "He is someone you can trust",
@@ -14,8 +13,7 @@
    "Él es alguien en quien se puede confiar"
   ],
   "description": "",
-  "custom_list": true,
-  "group": 2
+  "custom_list": true
  },
  {
   "sentence": "If that happened",
@@ -23,8 +21,7 @@
    "Si eso sucediera"
   ],
   "description": "",
-  "custom_list": true,
-  "group": 2
+  "custom_list": true
  },
  {
   "sentence": "What does the ring allow to do?",
@@ -32,8 +29,7 @@
    "¿Qué permite hacer el anillo?"
   ],
   "description": "",
-  "custom_list": true,
-  "group": 2
+  "custom_list": true
  },
  {
   "sentence": "To prevent them from betraying him",
@@ -41,8 +37,7 @@
    "Para evitar que lo traicionaran"
   ],
   "description": "",
-  "custom_list": true,
-  "group": 2
+  "custom_list": true
  },
  {
   "sentence": "According to Momonga",
@@ -50,8 +45,7 @@
    "Según Momonga"
   ],
   "description": "",
-  "custom_list": true,
-  "group": 2
+  "custom_list": true
  },
  {
   "sentence": "Why did Momonga wear full armor",
@@ -59,16 +53,37 @@
    "¿Por qué Momonga llevaba armadura completa?"
   ],
   "description": "",
-  "custom_list": true,
-  "group": 2
+  "custom_list": true
  },
  {
-  "sentence": "Her sister's life is what keeps her running",
+  "sentence": "Her sisters life is what keeps her running",
   "translations": [
    "La vida de su hermana es lo que la mantiene corriendo"
   ],
   "description": "",
-  "custom_list": true,
-  "group": 2
+  "custom_list": true
+ },
+ {
+  "sentence": "I was learning English",
+  "translations": [
+   "Estuve aprendiendo ingles"
+  ],
+  "description": "",
+  "custom_list": true
+ },
+ {
+  "sentence": "His eyes swam.",
+  "translations": [
+   "Sus ojos se llenaron de lágrimas."
+  ],
+  "description": "",
+  "custom_list": true
+ },
+ {
+  "sentence": "Explain to me where the get request is done.",
+  "translations": [
+   "Explícame dónde se hace la solicitud get."
+  ],
+  "custom_list": true
  }
 ]

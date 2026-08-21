@@ -563,8 +563,12 @@ function showFeedback(evalResult) {
   document.getElementById('feedback').className = 'visible';
   updateAddCurrentToCustomBtn();
   const descEl = document.getElementById('feedbackDesc');
-  if (current.description) { descEl.textContent = current.description; descEl.style.display = 'block'; }
-  else { descEl.style.display = 'none'; }
+  if (current.description && !current.synonym) { 
+    descEl.textContent = current.description; 
+    descEl.style.display = 'block'; 
+  } else { 
+    descEl.style.display = 'none'; 
+  }
   const transEl = document.getElementById('feedbackTranslation');
   const transTextEl = document.getElementById('feedbackTranslationText');
   if (current.type === 'sentence') {

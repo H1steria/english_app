@@ -100,22 +100,32 @@ async function updateGitHubRef(apiBase, headers, branch, commitSha) {
   });
   if (!res.ok) throw new Error(`Error actualizando referencia (código ${res.status}).`);
 }
+function stripNullKeys(obj) {
+  const clean = { ...obj };
+  Object.keys(clean).forEach(k => {
+    if (clean[k] === null || clean[k] === undefined) delete clean[k];
+  });
+  return clean;
+}
 function buildExportEntry(localWord, serverEntry, keyName, termValue, syncCustomList) {
   const base = localWord ? toCleanBaseItem(localWord) : { ...serverEntry };
   base[keyName] = termValue;
   if (syncCustomList) {
+    // La lista personalizada local manda: si el término está en customWords,
+    // se marca (y se conserva) custom_list = true; si no, se retira.
     if (customWords.includes(termValue)) {
       base.custom_list = true;
-      base.group = getWordGroup(termValue);
     } else {
       delete base.custom_list;
-      delete base.group;
     }
-  } else {
-    if (serverEntry && serverEntry.custom_list !== undefined) base.custom_list = serverEntry.custom_list;
-    if (serverEntry && serverEntry.group !== undefined) base.group = serverEntry.group;
+  } else if (serverEntry && serverEntry.custom_list !== undefined) {
+    // Sin sync: se respeta el valor que ya tenía el servidor.
+    base.custom_list = serverEntry.custom_list;
   }
-  return base;
+  // El número de grupo se calcula localmente (orden local) y nunca se sube
+  // a GitHub, independientemente de custom_list o de si venía del servidor.
+  delete base.group;
+  return stripNullKeys(base);
 }
 function buildExportDataset(serverList, localList, keyName, syncCustomList) {
   const localMap = {};

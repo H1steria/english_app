@@ -98,20 +98,22 @@ function buildNormalizedEntry(raw, type, savedWeights, index, issues) {
         }))
     : null;
   const rawPast = (type !== 'sentence' && typeof raw.past === 'string' && raw.past.trim()) ? raw.past.trim() : null;
+
   return {
     ...raw,
     word: term,
     type: type,
     rawTranslations: raw.translations.map(t => safeStr(t).trim()).filter(Boolean),
-    rawPast: rawPast,
     translations: cleanTranslations.map(t => removeAccents(t.toLowerCase())),
-    past: rawPast ? removeAccents(rawPast.toLowerCase()) : null,
-    sentences: (processedSentences && processedSentences.length > 0) ? processedSentences : null,
-    image: (type !== 'sentence' && raw.image) ? raw.image : null,
-    synonym: raw.synonym === true,
     weight: weight,
-    custom_list: raw.custom_list || false,
-    originalIndex: index
+    originalIndex: index,
+    // Only include these keys when there's an actual value, so we don't
+    // resurrect null/false keys that were deliberately deleted from the JSON.
+    ...(rawPast ? { rawPast, past: removeAccents(rawPast.toLowerCase()) } : {}),
+    ...((processedSentences && processedSentences.length > 0) ? { sentences: processedSentences } : {}),
+    ...((type !== 'sentence' && raw.image) ? { image: raw.image } : {}),
+    ...(raw.synonym === true ? { synonym: true } : {}),
+    ...(raw.custom_list ? { custom_list: true } : {}),
   };
 }
 function processLoadedData(wordsData, phrasalData, sentencesData) {
